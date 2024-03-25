@@ -5,7 +5,9 @@
 	},
 	"dependencies": {
 		"@grammyjs/conversations": "^1.2.0",
+		"@ston-fi/sdk": "^0.4.0",
 		"dotenv": "^16.4.5",
-		"grammy": "^1.21.1"
+		"grammy": "^1.21.1",
+		"tonweb": "^0.0.64"
 	}
 }

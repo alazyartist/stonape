@@ -1,4 +1,5 @@
 import * as dotenv from "dotenv";
+import StonFi from "./stonfiapi";
 import {
 	type Conversation,
 	type ConversationFlavor,
@@ -69,5 +70,8 @@ bot.callbackQuery("ape", (ctx) => {
 bot.callbackQuery("no", (ctx) => {
 	ctx.reply("I guess you hate money 🤷‍♂️");
 });
-console.log("Bot is running...");
-bot.start();
+// console.log("Bot is running...");
+// bot.start();
+
+StonFi();
+console.log("Running Stonfi");
