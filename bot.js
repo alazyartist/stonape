@@ -27,13 +27,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv = __importStar(require("dotenv"));
-const stonfiapi_1 = __importDefault(require("./stonfiapi"));
+const stonfiapi_1 = require("./stonfiapi");
 const conversations_1 = require("@grammyjs/conversations");
 const grammy_1 = require("grammy");
 dotenv.config();
@@ -45,9 +42,19 @@ bot.use(conversations_1.conversations());
 const ynkeyboard = new grammy_1.InlineKeyboard().text("Yes", "yes").text("No", "no");
 function caSetup(conversation, ctx) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield ctx.reply("Hello, I am a bot that can help you with your ape needs");
+        yield ctx.reply("Hello, I am ready for the ca");
         const { message } = yield conversation.wait();
-        yield ctx.reply(`You want to ape: ${message === null || message === void 0 ? void 0 : message.text}`, {
+        const contract_address = message === null || message === void 0 ? void 0 : message.text;
+        try {
+            const stonfidata = yield stonfiapi_1.getStonFiData(contract_address);
+            console.log(stonfidata, "is the stonfidata");
+        }
+        catch (e) {
+            console.log(e);
+            yield ctx.reply("There was an error setting up the CA, would you like to try again.", { reply_markup: ynkeyboard });
+        }
+        yield ctx.reply("Setting up the CA...");
+        yield ctx.reply(`You want to setape: ${contract_address}`, {
             reply_markup: ynkeyboard,
         });
         yield conversation.waitForCallbackQuery(["yes", "no"]).then((ctx) => __awaiter(this, void 0, void 0, function* () {
@@ -69,6 +76,9 @@ bot.command("start", (ctx) => ctx.reply("Hello Dylan, You have successfully star
         inline_keyboard: [[{ text: "CA Setup", callback_data: "ca_setup" }]],
     },
 }));
+bot.command("ca", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield ctx.conversation.enter("caSetup");
+}));
 bot.callbackQuery("ca_setup", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("caSetup");
 }));
@@ -86,11 +96,13 @@ bot.on(":text").hears("ape", (ctx) => {
 });
 bot.callbackQuery("ape", (ctx) => {
     ctx.reply("We are gonna 🦍 it");
+    ctx.conversation.exit("caSetup");
 });
 bot.callbackQuery("no", (ctx) => {
     ctx.reply("I guess you hate money 🤷‍♂️");
+    ctx.conversation.exit("caSetup");
 });
-// console.log("Bot is running...");
-// bot.start();
-stonfiapi_1.default();
-console.log("Running Stonfi");
+console.log("Bot is running...");
+bot.start();
+// StonFi();
+// console.log("Running Stonfi");
