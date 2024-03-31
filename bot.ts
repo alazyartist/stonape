@@ -8,6 +8,7 @@ import {
 } from "@grammyjs/conversations";
 import { Bot, Context, InlineKeyboard, session } from "grammy";
 import { getRedis, setRedis } from "./redis";
+import { toNano } from "@ton/core";
 dotenv.config();
 console.log(process.env?.TELEGRAM_TOKEN as string);
 type MyContext = Context & ConversationFlavor;
@@ -30,41 +31,23 @@ async function caSetup(conversation: MyConversation, ctx: MyContext) {
 		const stonfidata = await getStonFiData(contract_address);
 		console.log(stonfidata, "is the stonfidata");
 		if (stonfidata !== undefined) {
-			// const messageInfo = `
-			// ${stonfidata.name}
-			// ${stonfidata.description}
-			// Pool Name: ${stonfidata.poolName}
-			// Pool Dex: ${stonfidata.poolDex}
-			// Symbol: ${stonfidata.symbol}
-			// Price: ${stonfidata.price}
-			// 24h Volume: ${convertToK(stonfidata.volume)}
-			// Pool: ${stonfidata.pool}
-			// Twitter: ${stonfidata.twitter}
-			// Telegram: ${stonfidata.telegram}
-			// Website: ${stonfidata.website}
-
-			// CA:
-			// ${contract_address}
-			// `;
-			// ctx.reply(messageInfo);
 			const messageInfo = `
-			🌟 *Name*: ${stonfidata.name}
-			📝 *Description*: ${stonfidata.description}
-			🏊 *Pool Name*: ${stonfidata.poolName}
-			🔄 *Pool Dex*: ${stonfidata.poolDex}
-			🔣 *Symbol*: ${stonfidata.symbol}
-			💵 *Price*: ${stonfidata.price}
-			📈 *24h Volume*: ${convertToK(stonfidata.volume)}
-			🌀 *Pool*: ${stonfidata.pool}
-			🐦 *Twitter*: [Twitter](${stonfidata.twitter})
-			📲 *Telegram*: [Telegram Group](${stonfidata.telegram})
-			🌐 *Website*: [Website](${stonfidata.website})
+			${stonfidata.name}
+			${stonfidata.description}
+			Pool Name: ${stonfidata.poolName}
+			Pool Dex: ${stonfidata.poolDex}
+			Symbol: ${stonfidata.symbol}
+			Price: ${stonfidata.price}
+			24h Volume: ${convertToK(stonfidata.volume)}
+			Pool: ${stonfidata.pool}
+			Twitter: ${stonfidata.twitter}
+			Telegram: ${stonfidata.telegram}
+			Website: ${stonfidata.website}
 			
-			📄 *CA*:
-			\`${contract_address}\`
+			CA:
+			${contract_address}
 			`;
-
-			ctx.reply(messageInfo, { parse_mode: "MarkdownV2" });
+			ctx.reply(messageInfo);
 		}
 		await ctx.reply(`You want to ape: ${stonfidata?.poolName}`, {
 			reply_markup: ynkeyboard,
@@ -92,7 +75,96 @@ async function caSetup(conversation: MyConversation, ctx: MyContext) {
 bot.use(createConversation(caSetup));
 bot.command("about", async (ctx) => {
 	const item = ctx.match;
-	console.log(item);
+	const stonfidata = await getStonFiData(item);
+	if (stonfidata !== undefined) {
+		// 	const messageInfo = `
+		// 	🎯
+		// 🚀${stonfidata.name}🚀
+		// 📝${stonfidata.description}
+		// 🏊Pool Name: ${stonfidata.poolName}
+		// 🏛️Pool Dex: ${stonfidata.poolDex}
+		// 🌟Symbol: ${stonfidata.symbol}
+		// 💵Price: ${stonfidata.price}
+		// 📈24h Volume: ${convertToK(stonfidata.volume)}
+		// 🌀Pool: ${stonfidata.pool}
+		// Twitter:<a href='https://twitter.com/${stonfidata.twitter}'>${
+		// 		stonfidata?.twitter === null ? "Not Found" : stonfidata.twitter
+		// 	}</a>
+		// Telegram:<a href='https://t.me/${stonfidata.telegram}'>${
+		// 		stonfidata.telegram
+		// 	}</a>
+		// Website: ${stonfidata.website}
+
+		// CA:
+		// ${item}
+		// `;
+		const messageInfo = `
+	<b>🚀 ${stonfidata.name} 🚀</b>
+	<pre>
+	📝 Description | ${stonfidata.description}
+	───────────────┼────────────────────────
+	🏊 Pool Name   | ${stonfidata.poolName}
+	🏛️ Pool Dex    | ${stonfidata.poolDex}
+	🌟 Symbol      | ${stonfidata.symbol}
+	💵 Price       | ${stonfidata.price}
+	📈 24h Volume  | ${convertToK(stonfidata.volume)}
+	🌀 Pool        | ${stonfidata.pool}
+	</pre>
+	<b>Links:</b>
+	${
+		stonfidata.twitter
+			? `Twitter: <a href='https://twitter.com/${stonfidata.twitter}'>@${stonfidata.twitter}</a>\n`
+			: ""
+	}
+	${
+		stonfidata.website
+			? `Website: <a href='${stonfidata.website}'>Visit Website</a>\n`
+			: ""
+	}
+	${
+		stonfidata.pool
+			? `GeckoTerm: <a href='https://geckoterminal.com/ton/pools/${stonfidata.pool}'>See Chart</a>\n`
+			: ""
+	}
+	${
+		stonfidata.telegram
+			? `Telegram: <a href='https://t.me/${stonfidata.telegram}'>${stonfidata.telegram}</a>\n`
+			: ""
+	}
+	
+	<b>CA: (👆 to copy)</b>
+	<code>${item}</code>
+	`;
+
+		const inlineKeyboard = new InlineKeyboard()
+			.url("📈", `https://geckoterminal.com/ton/pools/${stonfidata.pool}`)
+			.url("✈️", `https://t.me/${stonfidata.telegram}`)
+			.url("🐦", `https://twitter.com/${stonfidata.twitter}`)
+			.row()
+			.url(
+				"Stonfi Swap",
+				`https://app.ston.fi/swap?&ft=TON&tt=${item}&fa=5&chartVisible=false`
+			)
+			.url(
+				"TON SWAP 1",
+				`ton://transfer/${stonfidata.pool}?amount=${toNano(
+					1
+				)}&comment=Swap%20to%20${stonfidata.name}`
+			)
+			.url(
+				"TON SWAP 5",
+				`ton://transfer/${stonfidata.pool}?amount=${toNano(
+					5
+				)}&comment=Swap%20to%20${stonfidata.name}`
+			)
+			.row()
+			.switchInline("📋 Share Contract", item); // This creates a switch inline query button
+
+		ctx.reply(messageInfo, {
+			reply_markup: inlineKeyboard,
+			parse_mode: "HTML",
+		});
+	}
 });
 bot.command("start", (ctx) =>
 	ctx.reply(

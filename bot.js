@@ -33,6 +33,7 @@ const dotenv = __importStar(require("dotenv"));
 const stonfiapi_1 = require("./stonfiapi");
 const conversations_1 = require("@grammyjs/conversations");
 const grammy_1 = require("grammy");
+const core_1 = require("@ton/core");
 dotenv.config();
 console.log((_a = process.env) === null || _a === void 0 ? void 0 : _a.TELEGRAM_TOKEN);
 const bot = new grammy_1.Bot(process.env.TELEGRAM_TOKEN);
@@ -52,39 +53,23 @@ function caSetup(conversation, ctx) {
             const stonfidata = yield stonfiapi_1.getStonFiData(contract_address);
             console.log(stonfidata, "is the stonfidata");
             if (stonfidata !== undefined) {
-                // const messageInfo = `
-                // ${stonfidata.name}
-                // ${stonfidata.description}
-                // Pool Name: ${stonfidata.poolName}
-                // Pool Dex: ${stonfidata.poolDex}
-                // Symbol: ${stonfidata.symbol}
-                // Price: ${stonfidata.price}
-                // 24h Volume: ${convertToK(stonfidata.volume)}
-                // Pool: ${stonfidata.pool}
-                // Twitter: ${stonfidata.twitter}
-                // Telegram: ${stonfidata.telegram}
-                // Website: ${stonfidata.website}
-                // CA:
-                // ${contract_address}
-                // `;
-                // ctx.reply(messageInfo);
                 const messageInfo = `
-			🌟 *Name*: ${stonfidata.name}
-			📝 *Description*: ${stonfidata.description}
-			🏊 *Pool Name*: ${stonfidata.poolName}
-			🔄 *Pool Dex*: ${stonfidata.poolDex}
-			🔣 *Symbol*: ${stonfidata.symbol}
-			💵 *Price*: ${stonfidata.price}
-			📈 *24h Volume*: ${convertToK(stonfidata.volume)}
-			🌀 *Pool*: ${stonfidata.pool}
-			🐦 *Twitter*: [Twitter](${stonfidata.twitter})
-			📲 *Telegram*: [Telegram Group](${stonfidata.telegram})
-			🌐 *Website*: [Website](${stonfidata.website})
+			${stonfidata.name}
+			${stonfidata.description}
+			Pool Name: ${stonfidata.poolName}
+			Pool Dex: ${stonfidata.poolDex}
+			Symbol: ${stonfidata.symbol}
+			Price: ${stonfidata.price}
+			24h Volume: ${convertToK(stonfidata.volume)}
+			Pool: ${stonfidata.pool}
+			Twitter: ${stonfidata.twitter}
+			Telegram: ${stonfidata.telegram}
+			Website: ${stonfidata.website}
 			
-			📄 *CA*:
-			\`${contract_address}\`
+			CA:
+			${contract_address}
 			`;
-                ctx.reply(messageInfo, { parse_mode: "MarkdownV2" });
+                ctx.reply(messageInfo);
             }
             yield ctx.reply(`You want to ape: ${stonfidata === null || stonfidata === void 0 ? void 0 : stonfidata.poolName}`, {
                 reply_markup: ynkeyboard,
@@ -111,7 +96,72 @@ function caSetup(conversation, ctx) {
 bot.use(conversations_1.createConversation(caSetup));
 bot.command("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     const item = ctx.match;
-    console.log(item);
+    const stonfidata = yield stonfiapi_1.getStonFiData(item);
+    if (stonfidata !== undefined) {
+        // 	const messageInfo = `
+        // 	🎯
+        // 🚀${stonfidata.name}🚀
+        // 📝${stonfidata.description}
+        // 🏊Pool Name: ${stonfidata.poolName}
+        // 🏛️Pool Dex: ${stonfidata.poolDex}
+        // 🌟Symbol: ${stonfidata.symbol}
+        // 💵Price: ${stonfidata.price}
+        // 📈24h Volume: ${convertToK(stonfidata.volume)}
+        // 🌀Pool: ${stonfidata.pool}
+        // Twitter:<a href='https://twitter.com/${stonfidata.twitter}'>${
+        // 		stonfidata?.twitter === null ? "Not Found" : stonfidata.twitter
+        // 	}</a>
+        // Telegram:<a href='https://t.me/${stonfidata.telegram}'>${
+        // 		stonfidata.telegram
+        // 	}</a>
+        // Website: ${stonfidata.website}
+        // CA:
+        // ${item}
+        // `;
+        const messageInfo = `
+	<b>🚀 ${stonfidata.name} 🚀</b>
+	<pre>
+	📝 Description | ${stonfidata.description}
+	───────────────┼────────────────────────
+	🏊 Pool Name   | ${stonfidata.poolName}
+	🏛️ Pool Dex    | ${stonfidata.poolDex}
+	🌟 Symbol      | ${stonfidata.symbol}
+	💵 Price       | ${stonfidata.price}
+	📈 24h Volume  | ${convertToK(stonfidata.volume)}
+	🌀 Pool        | ${stonfidata.pool}
+	</pre>
+	<b>Links:</b>
+	${stonfidata.twitter
+            ? `Twitter: <a href='https://twitter.com/${stonfidata.twitter}'>@${stonfidata.twitter}</a>\n`
+            : ""}
+	${stonfidata.website
+            ? `Website: <a href='${stonfidata.website}'>Visit Website</a>\n`
+            : ""}
+	${stonfidata.pool
+            ? `GeckoTerm: <a href='https://geckoterminal.com/ton/pools/${stonfidata.pool}'>See Chart</a>\n`
+            : ""}
+	${stonfidata.telegram
+            ? `Telegram: <a href='https://t.me/${stonfidata.telegram}'>${stonfidata.telegram}</a>\n`
+            : ""}
+	
+	<b>CA: (👆 to copy)</b>
+	<code>${item}</code>
+	`;
+        const inlineKeyboard = new grammy_1.InlineKeyboard()
+            .url("📈", `https://geckoterminal.com/ton/pools/${stonfidata.pool}`)
+            .url("✈️", `https://t.me/${stonfidata.telegram}`)
+            .url("🐦", `https://twitter.com/${stonfidata.twitter}`)
+            .row()
+            .url("Stonfi Swap", `https://app.ston.fi/swap?&ft=TON&tt=${item}&fa=5&chartVisible=false`)
+            .url("TON SWAP 1", `ton://transfer/${stonfidata.pool}?amount=${core_1.toNano(1)}&comment=Swap%20to%20${stonfidata.name}`)
+            .url("TON SWAP 5", `ton://transfer/${stonfidata.pool}?amount=${core_1.toNano(5)}&comment=Swap%20to%20${stonfidata.name}`)
+            .row()
+            .switchInline("📋 Share Contract", item); // This creates a switch inline query button
+        ctx.reply(messageInfo, {
+            reply_markup: inlineKeyboard,
+            parse_mode: "HTML",
+        });
+    }
 }));
 bot.command("start", (ctx) => {
     var _a;

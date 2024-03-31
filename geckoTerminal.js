@@ -32,6 +32,9 @@ function getTokenDetails(token, network) {
                 pool: geckoPools.data.map((pool) => pool.attributes.address)[0],
                 poolName: geckoPools.data.map((pool) => pool.attributes.name)[0],
                 poolDex: geckoPools.data.map((pool) => pool.relationships.dex.data.id)[0],
+                twitter: geckoInfo.data.attributes.twitter_handle,
+                telegram: geckoInfo.data.attributes.telegram_handle,
+                website: geckoInfo.data.attributes.websites[0],
             };
         }
     });
