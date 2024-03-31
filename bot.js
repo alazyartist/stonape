@@ -40,6 +40,9 @@ bot.use(grammy_1.session({ initial: () => ({}) }));
 bot.use(conversations_1.conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
 const ynkeyboard = new grammy_1.InlineKeyboard().text("Yes", "yes").text("No", "no");
+function convertToK(value) {
+    return `${(parseFloat(value) / 1000).toFixed(2)}K`;
+}
 function caSetup(conversation, ctx) {
     return __awaiter(this, void 0, void 0, function* () {
         yield ctx.reply("Hello, I am ready for the ca");
@@ -48,15 +51,50 @@ function caSetup(conversation, ctx) {
         try {
             const stonfidata = yield stonfiapi_1.getStonFiData(contract_address);
             console.log(stonfidata, "is the stonfidata");
+            if (stonfidata !== undefined) {
+                // const messageInfo = `
+                // ${stonfidata.name}
+                // ${stonfidata.description}
+                // Pool Name: ${stonfidata.poolName}
+                // Pool Dex: ${stonfidata.poolDex}
+                // Symbol: ${stonfidata.symbol}
+                // Price: ${stonfidata.price}
+                // 24h Volume: ${convertToK(stonfidata.volume)}
+                // Pool: ${stonfidata.pool}
+                // Twitter: ${stonfidata.twitter}
+                // Telegram: ${stonfidata.telegram}
+                // Website: ${stonfidata.website}
+                // CA:
+                // ${contract_address}
+                // `;
+                // ctx.reply(messageInfo);
+                const messageInfo = `
+			🌟 *Name*: ${stonfidata.name}
+			📝 *Description*: ${stonfidata.description}
+			🏊 *Pool Name*: ${stonfidata.poolName}
+			🔄 *Pool Dex*: ${stonfidata.poolDex}
+			🔣 *Symbol*: ${stonfidata.symbol}
+			💵 *Price*: ${stonfidata.price}
+			📈 *24h Volume*: ${convertToK(stonfidata.volume)}
+			🌀 *Pool*: ${stonfidata.pool}
+			🐦 *Twitter*: [Twitter](${stonfidata.twitter})
+			📲 *Telegram*: [Telegram Group](${stonfidata.telegram})
+			🌐 *Website*: [Website](${stonfidata.website})
+			
+			📄 *CA*:
+			\`${contract_address}\`
+			`;
+                ctx.reply(messageInfo, { parse_mode: "MarkdownV2" });
+            }
+            yield ctx.reply(`You want to ape: ${stonfidata === null || stonfidata === void 0 ? void 0 : stonfidata.poolName}`, {
+                reply_markup: ynkeyboard,
+            });
         }
         catch (e) {
             console.log(e);
             yield ctx.reply("There was an error setting up the CA, would you like to try again.", { reply_markup: ynkeyboard });
         }
         yield ctx.reply("Setting up the CA...");
-        yield ctx.reply(`You want to setape: ${contract_address}`, {
-            reply_markup: ynkeyboard,
-        });
         yield conversation.waitForCallbackQuery(["yes", "no"]).then((ctx) => __awaiter(this, void 0, void 0, function* () {
             var _a;
             if (((_a = ctx.callbackQuery) === null || _a === void 0 ? void 0 : _a.data) === "yes") {
@@ -71,11 +109,18 @@ function caSetup(conversation, ctx) {
     });
 }
 bot.use(conversations_1.createConversation(caSetup));
-bot.command("start", (ctx) => ctx.reply("Hello Dylan, You have successfully started a Telgram Bot: STON-APE!", {
-    reply_markup: {
-        inline_keyboard: [[{ text: "CA Setup", callback_data: "ca_setup" }]],
-    },
+bot.command("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    const item = ctx.match;
+    console.log(item);
 }));
+bot.command("start", (ctx) => {
+    var _a;
+    return ctx.reply(`Hello ${(_a = ctx.from) === null || _a === void 0 ? void 0 : _a.username}, You have successfully started a Telgram Bot: STON-APE!`, {
+        reply_markup: {
+            inline_keyboard: [[{ text: "CA Setup", callback_data: "ca_setup" }]],
+        },
+    });
+});
 bot.command("ca", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("caSetup");
 }));

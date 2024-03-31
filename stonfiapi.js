@@ -16,13 +16,13 @@ exports.getStonFiData = void 0;
 const tonweb_1 = __importDefault(require("tonweb"));
 const core_1 = require("@ton/core");
 const ton_1 = require("@ton/ton");
+const geckoTerminal_1 = require("./geckoTerminal");
 const sdk_1 = require("@ston-fi/sdk");
 function getStonFiData(contract_address) {
     return __awaiter(this, void 0, void 0, function* () {
         const provider = new tonweb_1.default.HttpProvider("https://toncenter.com/api/v2/jsonRPC", {
             apiKey: process.env.TONCENTER_TOKEN,
         });
-        const geckoApiBase = "https://api.geckoterminal.com/api/v2";
         const router = new sdk_1.Router(provider, {
             revision: sdk_1.ROUTER_REVISION.V1,
             address: sdk_1.ROUTER_REVISION_ADDRESS.V1,
@@ -34,36 +34,25 @@ function getStonFiData(contract_address) {
         // 	"EQDN11TTPTxw_xSPJs_zyrzIRml4JXDlppAmYzJq--tmpA6V"
         // );
         const jettonMasterAddress = core_1.Address.parse(contract_address);
-        const jettonMaster = client.open(ton_1.JettonMaster.create(jettonMasterAddress));
-        const jettonData = yield jettonMaster.getJettonData();
+        // const jettonMaster = client.open(JettonMaster.create(jettonMasterAddress));
+        // const jettonData = await jettonMaster.getJettonData();
         // console.log(jettonData.content, "is the jetton data content");
-        const routerData = yield router.getData();
-        const { isLocked, poolCode, jettonLpWalletCode } = routerData;
-        // const JETTON0 = "EQDQoc5M3Bh8eWFephi9bClhevelbZZvWhkqdo80XuY_0qXv";
-        // const JETTON1 = "EQC_1YoM8RBixN95lz7odcF3Vrkc_N8Ne7gQi7Abtlet_Efi";
-        const pool = yield router.getPool({
-            jettonAddresses: [
-                contract_address,
-                "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c",
-            ],
-        });
-        if (!pool) {
-            console.log(`Pool for ${contract_address}/TON} not found`);
-            throw Error(`Pool for ${contract_address}/TON} not found`);
-        }
         try {
-            console.log(`fetching 
-			${geckoApiBase}/networks/ton/pools/${pool.address}
-             `);
-            const data = yield fetch(`${geckoApiBase}/network/ton/pools/${pool.address}`);
-            const response = yield data.json();
-            console.log(response, "is the response");
+            const geckoInfo = yield geckoTerminal_1.getTokenDetails(contract_address, "ton");
+            return geckoInfo;
         }
         catch (e) {
-            console.log("Fetch Error", e);
+            console.log(e, "is the gecko error");
         }
+        const routerData = yield router.getData();
+        const { isLocked, poolCode, jettonLpWalletCode } = routerData;
+        //
+        // if (!pool) {
+        // 	console.log(`Pool for ${contract_address}/TON} not found`);
+        // 	throw Error(`Pool for ${contract_address}/TON} not found`);
+        // }
         console.log(contract_address.toString(), "is the contract address");
-        return jettonData;
+        // return jettonData;
     });
 }
 exports.getStonFiData = getStonFiData;
