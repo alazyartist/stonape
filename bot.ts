@@ -77,27 +77,6 @@ bot.command("about", async (ctx) => {
 	const item = ctx.match;
 	const stonfidata = await getStonFiData(item);
 	if (stonfidata !== undefined) {
-		// 	const messageInfo = `
-		// 	🎯
-		// 🚀${stonfidata.name}🚀
-		// 📝${stonfidata.description}
-		// 🏊Pool Name: ${stonfidata.poolName}
-		// 🏛️Pool Dex: ${stonfidata.poolDex}
-		// 🌟Symbol: ${stonfidata.symbol}
-		// 💵Price: ${stonfidata.price}
-		// 📈24h Volume: ${convertToK(stonfidata.volume)}
-		// 🌀Pool: ${stonfidata.pool}
-		// Twitter:<a href='https://twitter.com/${stonfidata.twitter}'>${
-		// 		stonfidata?.twitter === null ? "Not Found" : stonfidata.twitter
-		// 	}</a>
-		// Telegram:<a href='https://t.me/${stonfidata.telegram}'>${
-		// 		stonfidata.telegram
-		// 	}</a>
-		// Website: ${stonfidata.website}
-
-		// CA:
-		// ${item}
-		// `;
 		const messageInfo = `
 	<b>🚀 ${stonfidata.name} 🚀</b>
 	<pre>
@@ -110,37 +89,39 @@ bot.command("about", async (ctx) => {
 	📈 24h Volume  | ${convertToK(stonfidata.volume)}
 	🌀 Pool        | ${stonfidata.pool}
 	</pre>
-	<b>Links:</b>
-	${
-		stonfidata.twitter
-			? `Twitter: <a href='https://twitter.com/${stonfidata.twitter}'>@${stonfidata.twitter}</a>\n`
-			: ""
-	}
-	${
-		stonfidata.website
-			? `Website: <a href='${stonfidata.website}'>Visit Website</a>\n`
-			: ""
-	}
-	${
-		stonfidata.pool
-			? `GeckoTerm: <a href='https://geckoterminal.com/ton/pools/${stonfidata.pool}'>See Chart</a>\n`
-			: ""
-	}
-	${
-		stonfidata.telegram
-			? `Telegram: <a href='https://t.me/${stonfidata.telegram}'>${stonfidata.telegram}</a>\n`
-			: ""
-	}
+
 	
 	<b>CA: (👆 to copy)</b>
 	<code>${item}</code>
 	`;
-
-		const inlineKeyboard = new InlineKeyboard()
+		const linkMessage = `
+${
+	stonfidata.twitter
+		? `Twitter: <a href='https://twitter.com/${stonfidata.twitter}'>@${stonfidata.twitter}</a>\n`
+		: ""
+}
+${
+	stonfidata.website
+		? `Website: <a href='${stonfidata.website}'>Visit Website</a>\n`
+		: ""
+}
+${
+	stonfidata.pool
+		? `GeckoTerm: <a href='https://geckoterminal.com/ton/pools/${stonfidata.pool}'>See Chart</a>\n`
+		: ""
+}
+${
+	stonfidata.telegram
+		? `Telegram: <a href='https://t.me/${stonfidata.telegram}'>${stonfidata.telegram}</a>\n`
+		: ""
+}`;
+		const linkKeyboard = new InlineKeyboard()
 			.url("📈", `https://geckoterminal.com/ton/pools/${stonfidata.pool}`)
 			.url("✈️", `https://t.me/${stonfidata.telegram}`)
 			.url("🐦", `https://twitter.com/${stonfidata.twitter}`)
-			.row()
+			.row();
+
+		const inlineKeyboard = new InlineKeyboard()
 			.url(
 				"Stonfi Swap",
 				`https://app.ston.fi/swap?&ft=TON&tt=${item}&fa=5&chartVisible=false`
@@ -151,20 +132,24 @@ bot.command("about", async (ctx) => {
 					1
 				)}&comment=Swap%20to%20${stonfidata.name}`
 			)
-			.url(
-				"TON SWAP 5",
-				`ton://transfer/${stonfidata.pool}?amount=${toNano(
-					5
-				)}&comment=Swap%20to%20${stonfidata.name}`
-			)
 			.row()
-			.switchInline("📋 Share Contract", item); // This creates a switch inline query button
+			.text("links", "links");
+
+		// .url(
+		// 	"TON SWAP 5",
+		// 	`ton://transfer/${stonfidata.pool}?amount=${toNano(
+		// 		5
+		// 	)}&comment=Swap%20to%20${stonfidata.name}`
+		// )
 
 		ctx.reply(messageInfo, {
 			reply_markup: inlineKeyboard,
 			parse_mode: "HTML",
 		});
 	}
+});
+bot.callbackQuery("links", async (ctx) => {
+	console.log("links", ctx.session);
 });
 bot.command("start", (ctx) =>
 	ctx.reply(
