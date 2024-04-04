@@ -27,142 +27,59 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv = __importStar(require("dotenv"));
-const stonfiapi_1 = require("./stonfiapi");
 const conversations_1 = require("@grammyjs/conversations");
 const grammy_1 = require("grammy");
-const core_1 = require("@ton/core");
+const menu_1 = require("@grammyjs/menu");
+const casetup_1 = require("./conversations/casetup");
+const about_1 = __importDefault(require("./commands/about"));
+const topPools_1 = require("./commands/topPools");
 dotenv.config();
 console.log((_a = process.env) === null || _a === void 0 ? void 0 : _a.TELEGRAM_TOKEN);
 const bot = new grammy_1.Bot(process.env.TELEGRAM_TOKEN);
 bot.use(grammy_1.session({ initial: () => ({}) }));
 bot.use(conversations_1.conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
-const ynkeyboard = new grammy_1.InlineKeyboard().text("Yes", "yes").text("No", "no");
-function convertToK(value) {
-    return `${(parseFloat(value) / 1000).toFixed(2)}K`;
-}
-function caSetup(conversation, ctx) {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield ctx.reply("Hello, I am ready for the ca");
-        const { message } = yield conversation.wait();
-        const contract_address = message === null || message === void 0 ? void 0 : message.text;
-        try {
-            const stonfidata = yield stonfiapi_1.getStonFiData(contract_address);
-            console.log(stonfidata, "is the stonfidata");
-            if (stonfidata !== undefined) {
-                const messageInfo = `
-			${stonfidata.name}
-			${stonfidata.description}
-			Pool Name: ${stonfidata.poolName}
-			Pool Dex: ${stonfidata.poolDex}
-			Symbol: ${stonfidata.symbol}
-			Price: ${stonfidata.price}
-			24h Volume: ${convertToK(stonfidata.volume)}
-			Pool: ${stonfidata.pool}
-			Twitter: ${stonfidata.twitter}
-			Telegram: ${stonfidata.telegram}
-			Website: ${stonfidata.website}
-			
-			CA:
-			${contract_address}
-			`;
-                ctx.reply(messageInfo);
-            }
-            yield ctx.reply(`You want to ape: ${stonfidata === null || stonfidata === void 0 ? void 0 : stonfidata.poolName}`, {
-                reply_markup: ynkeyboard,
-            });
-        }
-        catch (e) {
-            console.log(e);
-            yield ctx.reply("There was an error setting up the CA, would you like to try again.", { reply_markup: ynkeyboard });
-        }
-        yield ctx.reply("Setting up the CA...");
-        yield conversation.waitForCallbackQuery(["yes", "no"]).then((ctx) => __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            if (((_a = ctx.callbackQuery) === null || _a === void 0 ? void 0 : _a.data) === "yes") {
-                yield ctx.reply("We are gonna 🦍 it");
-                return;
-            }
-            else {
-                yield ctx.reply("I guess you hate money 🤷‍♂️");
-                return;
-            }
-        }));
-    });
-}
-bot.use(conversations_1.createConversation(caSetup));
-bot.command("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    const item = ctx.match;
-    const stonfidata = yield stonfiapi_1.getStonFiData(item);
-    if (stonfidata !== undefined) {
-        const messageInfo = `
-	<b>🚀 ${stonfidata.name} 🚀</b>
-	<pre>
-	📝 Description | ${stonfidata.description}
-	───────────────┼────────────────────────
-	🏊 Pool Name   | ${stonfidata.poolName}
-	🏛️ Pool Dex    | ${stonfidata.poolDex}
-	🌟 Symbol      | ${stonfidata.symbol}
-	💵 Price       | ${stonfidata.price}
-	📈 24h Volume  | ${convertToK(stonfidata.volume)}
-	🌀 Pool        | ${stonfidata.pool}
-	</pre>
-
-	
-	<b>CA: (👆 to copy)</b>
-	<code>${item}</code>
-	`;
-        const linkMessage = `
-${stonfidata.twitter
-            ? `Twitter: <a href='https://twitter.com/${stonfidata.twitter}'>@${stonfidata.twitter}</a>\n`
-            : ""}
-${stonfidata.website
-            ? `Website: <a href='${stonfidata.website}'>Visit Website</a>\n`
-            : ""}
-${stonfidata.pool
-            ? `GeckoTerm: <a href='https://geckoterminal.com/ton/pools/${stonfidata.pool}'>See Chart</a>\n`
-            : ""}
-${stonfidata.telegram
-            ? `Telegram: <a href='https://t.me/${stonfidata.telegram}'>${stonfidata.telegram}</a>\n`
-            : ""}`;
-        const linkKeyboard = new grammy_1.InlineKeyboard()
-            .url("📈", `https://geckoterminal.com/ton/pools/${stonfidata.pool}`)
-            .url("✈️", `https://t.me/${stonfidata.telegram}`)
-            .url("🐦", `https://twitter.com/${stonfidata.twitter}`)
-            .row();
-        const inlineKeyboard = new grammy_1.InlineKeyboard()
-            .url("Stonfi Swap", `https://app.ston.fi/swap?&ft=TON&tt=${item}&fa=5&chartVisible=false`)
-            .url("TON SWAP 1", `ton://transfer/${stonfidata.pool}?amount=${core_1.toNano(1)}&comment=Swap%20to%20${stonfidata.name}`)
-            .row()
-            .text("links", "links");
-        // .url(
-        // 	"TON SWAP 5",
-        // 	`ton://transfer/${stonfidata.pool}?amount=${toNano(
-        // 		5
-        // 	)}&comment=Swap%20to%20${stonfidata.name}`
-        // )
-        ctx.reply(messageInfo, {
-            reply_markup: inlineKeyboard,
-            parse_mode: "HTML",
-        });
-    }
-}));
-bot.callbackQuery("links", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("links", ctx.session);
-}));
+bot.catch((err) => {
+    err.ctx.reply("An error occurred, please try again");
+    console.error(`Error for ${err.ctx.update.message}`, err);
+    bot.start();
+});
+bot.use(conversations_1.createConversation(casetup_1.caSetup));
+bot.use(conversations_1.createConversation(about_1.default));
+bot.api.setMyCommands([
+    { command: "about", description: "Get information about a token" },
+    { command: "ape", description: "Make Aping Easy AF" },
+    { command: "top", description: "Get Top Pools on TON" },
+    { command: "ca", description: "Setup a contract address" },
+]);
+const menu = new menu_1.Menu("main-menu")
+    .text("🦍", (ctx) => ctx.reply("Ape Setup"))
+    .row()
+    .text("ca", (ctx) => ctx.conversation.enter("caSetup"));
+bot.use(menu);
 bot.command("start", (ctx) => {
     var _a;
     return ctx.reply(`Hello ${(_a = ctx.from) === null || _a === void 0 ? void 0 : _a.username}, You have successfully started a Telgram Bot: STON-APE!`, {
-        reply_markup: {
-            inline_keyboard: [[{ text: "CA Setup", callback_data: "ca_setup" }]],
-        },
+        reply_markup: menu,
     });
 });
 bot.command("ca", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("caSetup");
+}));
+bot.command("top", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield topPools_1.topPools(ctx);
+}));
+bot.command("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield ctx.conversation.enter("aboutToken");
+}));
+bot.callbackQuery("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(ctx.match);
 }));
 bot.callbackQuery("ca_setup", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("caSetup");
@@ -189,5 +106,3 @@ bot.callbackQuery("no", (ctx) => {
 });
 console.log("Bot is running...");
 bot.start();
-// StonFi();
-// console.log("Running Stonfi");

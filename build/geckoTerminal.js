@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTokenDetails = void 0;
+exports.getTopPools = exports.getTokenDetails = void 0;
 const geckoApi = "https://api.geckoTerminal.com/api/v2";
 function getTokenDetails(token, network) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -40,6 +40,25 @@ function getTokenDetails(token, network) {
     });
 }
 exports.getTokenDetails = getTokenDetails;
+function getTopPools(network) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const topPools = yield fetch(`${geckoApi}/networks/${network}/pools`);
+        if (!topPools) {
+            throw Error(`Top pools not found`);
+        }
+        const geckoPools = yield topPools.json();
+        if (geckoPools.data) {
+            const data = geckoPools.data.map((pool) => ({
+                ca: pool.attributes.address,
+                name: pool.attributes.name,
+                volume: pool.attributes.volume_usd.h24,
+                price_change: pool.attributes.price_change_percentage.h24,
+            }));
+            return data;
+        }
+    });
+}
+exports.getTopPools = getTopPools;
 //gives token description
 //gives token pools
 //.data.attributes.address,

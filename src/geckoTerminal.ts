@@ -35,6 +35,28 @@ export async function getTokenDetails(token: string, network: string) {
 		};
 	}
 }
+export async function getTopPools(network: string) {
+	const topPools = await fetch(`${geckoApi}/networks/${network}/pools`);
+	if (!topPools) {
+		throw Error(`Top pools not found`);
+	}
+	const geckoPools = await topPools.json();
+	if (geckoPools.data) {
+		const data: {
+			ca: string;
+			name: string;
+			volume: string;
+			price_change: string;
+		}[] = geckoPools.data.map((pool: any) => ({
+			ca: pool.attributes.address,
+			name: pool.attributes.name,
+			volume: pool.attributes.volume_usd.h24,
+			price_change: pool.attributes.price_change_percentage.h24,
+		}));
+
+		return data;
+	}
+}
 
 //gives token description
 //gives token pools

@@ -9,6 +9,7 @@
 	},
 	"dependencies": {
 		"@grammyjs/conversations": "^1.2.0",
+		"@grammyjs/menu": "^1.2.1",
 		"@ston-fi/sdk": "^0.4.0",
 		"@ton/core": "^0.56.3",
 		"@ton/crypto": "^3.2.0",
