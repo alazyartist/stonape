@@ -28,7 +28,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRedis = exports.setRedis = void 0;
+exports.getChatId = exports.getPumpData = exports.storePumpData = exports.getRedis = exports.setRedis = void 0;
 const dotenv = __importStar(require("dotenv"));
 const ioredis_1 = require("ioredis");
 dotenv.config();
@@ -41,3 +41,38 @@ const getRedis = (key) => __awaiter(void 0, void 0, void 0, function* () {
     return client.get(key);
 });
 exports.getRedis = getRedis;
+function storePumpData(contract_address, chat_id) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield client.hset(contract_address, { chat_id: chat_id.toString() }, (err, res) => {
+            if (err) {
+                console.log(err);
+            }
+            console.log(res);
+        });
+    });
+}
+exports.storePumpData = storePumpData;
+function getPumpData(contractAddress) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = yield client.hgetall(contractAddress, (err, data) => {
+            if (err)
+                console.error(err);
+            else
+                console.log("Data for", contractAddress, data);
+        });
+        return data;
+    });
+}
+exports.getPumpData = getPumpData;
+function getChatId(contractAddress) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = yield client.hget(contractAddress, "chat_id", (err, data) => {
+            if (err)
+                console.error(err);
+            else
+                console.log("Data for", contractAddress, data);
+        });
+        return Promise.resolve(data);
+    });
+}
+exports.getChatId = getChatId;

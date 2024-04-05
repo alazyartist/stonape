@@ -5,6 +5,7 @@ declare global {
 			TONCENTER_TOKEN: string;
 			UPSTASH_PASS: string;
 			UPSTASH_URL: string;
+			HELIUS_KEY: string;
 		}
 	}
 }
