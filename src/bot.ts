@@ -46,7 +46,7 @@ const menu = new Menu<MyContext>("main-menu")
 	.text("watch.it.pump", (ctx) => ctx.conversation.enter("setupPump"));
 bot.use(menu);
 bot.command("start", (ctx) =>
-	ctx.replyWithPhoto(
+	ctx.reply(
 		`Welcome ${ctx.from?.username}, You have successfully started the ston_ape_bot!`,
 		{
 			reply_markup: menu,

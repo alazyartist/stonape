@@ -72,7 +72,7 @@ const menu = new menu_1.Menu("main-menu")
 exports.bot.use(menu);
 exports.bot.command("start", (ctx) => {
     var _a;
-    return ctx.replyWithPhoto(`Welcome ${(_a = ctx.from) === null || _a === void 0 ? void 0 : _a.username}, You have successfully started the ston_ape_bot!`, {
+    return ctx.reply(`Welcome ${(_a = ctx.from) === null || _a === void 0 ? void 0 : _a.username}, You have successfully started the ston_ape_bot!`, {
         reply_markup: menu,
     });
 });
