@@ -32,12 +32,12 @@ function setupPump(conversation, ctx) {
         const keyboard = new grammy_1.InlineKeyboard().text("Yes", "yes").text("No", "no");
         yield ctx.replyWithPhoto(image, {
             caption: `You have provided the contract address: 
-        <code>${contract_address}<code/>
+        <code>${contract_address}</code>
         Token Name: ${name}
         Token Symbol: ${symbol}
         Token Description: ${description}
 
-        <b> Is this correct?<b/>`,
+        <b> Is this correct?</b>`,
             reply_markup: keyboard,
             parse_mode: "HTML",
         });
@@ -54,6 +54,7 @@ function setupPump(conversation, ctx) {
                 }
                 yield ctx.reply("Setting up PumpBot...");
                 yield ctx.reply("PumpBot has been successfully setup. You will now receive notifications for the token for 10 Hours.");
+                yield ctx.reply("Please allow 2 to 3 minutes for the bot to start pulling in Buys.");
             }
             else {
                 yield ctx.reply("PumpBot setup cancelled.");

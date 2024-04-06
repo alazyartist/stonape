@@ -41,6 +41,7 @@ const casetup_1 = require("./conversations/casetup");
 const about_1 = __importDefault(require("./commands/about"));
 const topPools_1 = require("./commands/topPools");
 const setupPump_1 = __importDefault(require("./conversations/setupPump"));
+const listPumps_1 = require("./commands/listPumps");
 dotenv.config();
 console.log((_a = process.env) === null || _a === void 0 ? void 0 : _a.TELEGRAM_TOKEN);
 exports.bot = new grammy_1.Bot(process.env.TELEGRAM_TOKEN);
@@ -56,6 +57,8 @@ exports.bot.use(conversations_1.createConversation(casetup_1.caSetup));
 exports.bot.use(conversations_1.createConversation(about_1.default));
 exports.bot.use(conversations_1.createConversation(setupPump_1.default));
 exports.bot.api.setMyCommands([
+    { command: "start", description: "Start the Bot" },
+    { command: "list_pumps", description: "Get a List of Active Pumps" },
     { command: "about", description: "Get information about a token" },
     // { command: "ape", description: "Make Aping Easy AF" },
     { command: "top", description: "Get Top Pools on TON" },
@@ -69,7 +72,7 @@ const menu = new menu_1.Menu("main-menu")
 exports.bot.use(menu);
 exports.bot.command("start", (ctx) => {
     var _a;
-    return ctx.reply(`Hello ${(_a = ctx.from) === null || _a === void 0 ? void 0 : _a.username}, You have successfully started the ston_ape_bot!`, {
+    return ctx.replyWithPhoto(`Welcome ${(_a = ctx.from) === null || _a === void 0 ? void 0 : _a.username}, You have successfully started the ston_ape_bot!`, {
         reply_markup: menu,
     });
 });
@@ -81,6 +84,9 @@ exports.bot.command("top", (ctx) => __awaiter(void 0, void 0, void 0, function* 
 }));
 exports.bot.command("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("aboutToken");
+}));
+exports.bot.command("list_pumps", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield listPumps_1.listPumps(ctx);
 }));
 exports.bot.command("chatid", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
@@ -108,10 +114,9 @@ exports.bot.on(":text").hears("ape", (ctx) => {
     });
 });
 exports.bot.on(":text", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
-    console.log((_c = ctx.message) === null || _c === void 0 ? void 0 : _c.text);
+    console.log(ctx.message);
 }));
-exports.bot.on(":text").hears("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+exports.bot.on(":text").hears("watch.it.pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("setupPump");
 }));
 exports.bot.callbackQuery("ape", (ctx) => {

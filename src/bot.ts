@@ -12,6 +12,7 @@ import { caSetup } from "./conversations/casetup";
 import aboutToken from "./commands/about";
 import { topPools } from "./commands/topPools";
 import setupPump from "./conversations/setupPump";
+import { listPumps } from "./commands/listPumps";
 dotenv.config();
 console.log(process.env?.TELEGRAM_TOKEN as string);
 type MyContext = Context & ConversationFlavor;
@@ -31,6 +32,8 @@ bot.use(createConversation(aboutToken));
 bot.use(createConversation(setupPump));
 
 bot.api.setMyCommands([
+	{ command: "start", description: "Start the Bot" },
+	{ command: "list_pumps", description: "Get a List of Active Pumps" },
 	{ command: "about", description: "Get information about a token" },
 	// { command: "ape", description: "Make Aping Easy AF" },
 	{ command: "top", description: "Get Top Pools on TON" },
@@ -43,8 +46,8 @@ const menu = new Menu<MyContext>("main-menu")
 	.text("watch.it.pump", (ctx) => ctx.conversation.enter("setupPump"));
 bot.use(menu);
 bot.command("start", (ctx) =>
-	ctx.reply(
-		`Hello ${ctx.from?.username}, You have successfully started the ston_ape_bot!`,
+	ctx.replyWithPhoto(
+		`Welcome ${ctx.from?.username}, You have successfully started the ston_ape_bot!`,
 		{
 			reply_markup: menu,
 		}
@@ -58,6 +61,9 @@ bot.command("top", async (ctx) => {
 });
 bot.command("about", async (ctx) => {
 	await ctx.conversation.enter("aboutToken");
+});
+bot.command("list_pumps", async (ctx) => {
+	await listPumps(ctx);
 });
 bot.command("chatid", async (ctx) => {
 	console.log(ctx.chat?.id);
@@ -85,9 +91,10 @@ bot.on(":text").hears("ape", (ctx) => {
 });
 
 bot.on(":text", async (ctx) => {
-	console.log(ctx.message?.text);
+	console.log(ctx.message);
 });
-bot.on(":text").hears("setup_pump", async (ctx) => {
+
+bot.on(":text").hears("watch.it.pump", async (ctx) => {
 	await ctx.conversation.enter("setupPump");
 });
 

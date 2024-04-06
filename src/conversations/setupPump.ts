@@ -31,12 +31,12 @@ export default async function setupPump(
 	const keyboard = new InlineKeyboard().text("Yes", "yes").text("No", "no");
 	await ctx.replyWithPhoto(image, {
 		caption: `You have provided the contract address: 
-        <code>${contract_address}<code/>
+        <code>${contract_address}</code>
         Token Name: ${name}
         Token Symbol: ${symbol}
         Token Description: ${description}
 
-        <b> Is this correct?<b/>`,
+        <b> Is this correct?</b>`,
 		reply_markup: keyboard,
 		parse_mode: "HTML",
 	});
@@ -57,6 +57,9 @@ export default async function setupPump(
 			await ctx.reply("Setting up PumpBot...");
 			await ctx.reply(
 				"PumpBot has been successfully setup. You will now receive notifications for the token for 10 Hours."
+			);
+			await ctx.reply(
+				"Please allow 2 to 3 minutes for the bot to start pulling in Buys."
 			);
 		} else {
 			await ctx.reply("PumpBot setup cancelled.");

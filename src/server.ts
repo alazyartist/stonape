@@ -11,7 +11,8 @@ bot.start();
 // const chatid = "-4188325364";
 // Route for handling POST requests
 app.post("/", (req: Request, res: Response) => {
-	console.log("Received webhook:", req.body);
+	// console.log("Received webhook:", req);
+	console.log("Received webhook:", req.body.events);
 	if (Array.isArray(req.body)) {
 		req.body.forEach(async (message) => {
 			const mint_addr = message.tokenTransfers[0].mint;
@@ -45,6 +46,35 @@ app.post("/", (req: Request, res: Response) => {
 			});
 		});
 	}
+
+	// ⬜⬜⬜⬜⬜⬜
+	// ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
+	// 🟩⬛⬛⬛⬛⬛⬛⬛⬛⬛
+	// 🟩🟩⬛⬛⬛⬛⬛⬛⬛⬛
+	// 🟩🟩🟩⬛⬛⬛⬛⬛⬛⬛
+	// 🟩🟩🟩🟩⬛⬛⬛⬛⬛⬛
+	// 🟩🟩🟩🟩🟩⬛⬛⬛⬛⬛
+
+	// ⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜
+	// 🟩⬜⬜⬜⬜⬜⬜⬜⬜⬜
+	// 🟩🟩⬜⬜⬜⬜⬜⬜⬜⬜
+	// 🟩🟩🟩⬜⬜⬜⬜⬜⬜⬜
+	// 🟩🟩🟩🟩⬜⬜⬜⬜⬜⬜
+	// 🟩🟩🟩🟩⬜⬜⬜⬜⬜⬜
+	// 🟩🟩🟩🟩🟩⬜⬜⬜⬜⬜
+	// 🟩🟩🟩🟩🟩🟩⬜⬜⬜⬜
+	// 🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜
+	// 🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜
+	// 🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜
+
+	//custom emojis deluge.cash // need Fragment. telgram username to send custom emoji
+	// "6210755694811942323" - empty left
+	// "6210484325893278921" - empty middle
+	// "6213111986884972262" - empty right
+	// "6213097422650870923" - filled left
+	// "6210847100305935879" - filled middle
+	// "6210691566655245929" - filled right
+
 	// bot.api.sendMessage(
 	// 	chatid,
 	// 	`Pump Fun Buy:
