@@ -38,7 +38,7 @@ async function updateWebhookAddresses() {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				webhookUrl: "https://b1a6-24-8-13-244.ngrok-free.app",
+				webhookUrl: process.env.WEBHOOK_URL,
 				transactionTypes: ["TRANSFER"],
 				accountAddresses: addresses,
 				webhookType: "enhanced",
