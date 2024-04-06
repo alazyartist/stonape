@@ -18,12 +18,15 @@ const redis_js_1 = require("./redis.js");
 const helius_js_1 = require("./helius.js");
 const utils_js_1 = require("./utils.js");
 const app = express_1.default();
-const port = 80;
+const port = 3000;
 // Middleware to parse incoming requests with JSON payloads
 app.use(express_1.default.json());
 bot_js_1.bot.start();
 // const chatid = "-4188325364";
 // Route for handling POST requests
+app.get("/", (req, res) => {
+    res.status(200).send("Ston_Ape_Bot Is Active");
+});
 app.post("/", (req, res) => {
     // console.log("Received webhook:", req);
     console.log("Received webhook:", req.body.events);

@@ -4,12 +4,15 @@ import { getChatId } from "./redis.js";
 import { getPumpTokenInfo } from "./helius.js";
 import { calculateMarketCap, convertToK } from "./utils.js";
 const app = express();
-const port = 80;
+const port = 3000;
 // Middleware to parse incoming requests with JSON payloads
 app.use(express.json());
 bot.start();
 // const chatid = "-4188325364";
 // Route for handling POST requests
+app.get("/", (req: Request, res: Response) => {
+	res.status(200).send("Ston_Ape_Bot Is Active");
+});
 app.post("/", (req: Request, res: Response) => {
 	// console.log("Received webhook:", req);
 	console.log("Received webhook:", req.body.events);
