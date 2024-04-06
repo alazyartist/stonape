@@ -39,7 +39,7 @@ async function updateWebhookAddresses() {
 			},
 			body: JSON.stringify({
 				webhookUrl: process.env.WEBHOOK_URL,
-				transactionTypes: ["TRANSFER"],
+				transactionTypes: ["TRANSFER", "SWAP"],
 				accountAddresses: addresses,
 				webhookType: "enhanced",
 			}),
