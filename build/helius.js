@@ -9,7 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPumpTokenInfo = void 0;
+exports.updateWebhookAddresses = exports.getPumpTokenInfo = void 0;
+const redis_1 = require("./redis");
 function getPumpTokenInfo(contract_address) {
     return __awaiter(this, void 0, void 0, function* () {
         const response = yield fetch(`https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_KEY}`, {
@@ -37,3 +38,29 @@ function getPumpTokenInfo(contract_address) {
     });
 }
 exports.getPumpTokenInfo = getPumpTokenInfo;
+//useful methods getTokenSupply  getTokenLargestAccounts
+function updateWebhookAddresses() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const addresses = yield redis_1.getActivePumps();
+        const response = yield fetch(`https://api.helius.xyz/v0/webhooks/${process.env.WEBHOOK_ID}?api-key=${process.env.HELIUS_KEY}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                webhookUrl: "https://b1a6-24-8-13-244.ngrok-free.app",
+                transactionTypes: ["TRANSFER"],
+                accountAddresses: addresses,
+                webhookType: "enhanced",
+            }),
+        });
+        const data = yield response.json();
+        if (data.error) {
+            console.error("Error adding address to webhook:", data.error);
+            return false;
+        }
+        console.log("Webhook EDITED response:", data);
+        return true;
+    });
+}
+exports.updateWebhookAddresses = updateWebhookAddresses;

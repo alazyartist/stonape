@@ -6,6 +6,7 @@ declare global {
 			UPSTASH_PASS: string;
 			UPSTASH_URL: string;
 			HELIUS_KEY: string;
+			WEBHOOK_ID: string;
 		}
 	}
 }

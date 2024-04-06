@@ -57,7 +57,7 @@ exports.bot.use(conversations_1.createConversation(about_1.default));
 exports.bot.use(conversations_1.createConversation(setupPump_1.default));
 exports.bot.api.setMyCommands([
     { command: "about", description: "Get information about a token" },
-    { command: "ape", description: "Make Aping Easy AF" },
+    // { command: "ape", description: "Make Aping Easy AF" },
     { command: "top", description: "Get Top Pools on TON" },
     { command: "ca", description: "Setup a contract address" },
     { command: "setup_pump", description: "Setup a PumpFun BuyBot" },
@@ -65,11 +65,11 @@ exports.bot.api.setMyCommands([
 const menu = new menu_1.Menu("main-menu")
     .text("🦍", (ctx) => ctx.reply("Ape Setup"))
     .row()
-    .text("ca", (ctx) => ctx.conversation.enter("caSetup"));
+    .text("watch.it.pump", (ctx) => ctx.conversation.enter("setupPump"));
 exports.bot.use(menu);
 exports.bot.command("start", (ctx) => {
     var _a;
-    return ctx.reply(`Hello ${(_a = ctx.from) === null || _a === void 0 ? void 0 : _a.username}, You have successfully started a Telgram Bot: STON-APE!`, {
+    return ctx.reply(`Hello ${(_a = ctx.from) === null || _a === void 0 ? void 0 : _a.username}, You have successfully started the ston_ape_bot!`, {
         reply_markup: menu,
     });
 });
@@ -107,12 +107,19 @@ exports.bot.on(":text").hears("ape", (ctx) => {
         },
     });
 });
+exports.bot.on(":text", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    console.log((_c = ctx.message) === null || _c === void 0 ? void 0 : _c.text);
+}));
+exports.bot.on(":text").hears("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield ctx.conversation.enter("setupPump");
+}));
 exports.bot.callbackQuery("ape", (ctx) => {
     ctx.reply("We are gonna 🦍 it");
     ctx.conversation.exit("caSetup");
 });
 exports.bot.callbackQuery("no", (ctx) => {
     ctx.reply("I guess you hate money 🤷‍♂️");
-    ctx.conversation.exit("caSetup");
+    ctx.conversation.exit("*");
 });
 console.log("Bot is running...");

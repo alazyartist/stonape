@@ -32,7 +32,7 @@ bot.use(createConversation(setupPump));
 
 bot.api.setMyCommands([
 	{ command: "about", description: "Get information about a token" },
-	{ command: "ape", description: "Make Aping Easy AF" },
+	// { command: "ape", description: "Make Aping Easy AF" },
 	{ command: "top", description: "Get Top Pools on TON" },
 	{ command: "ca", description: "Setup a contract address" },
 	{ command: "setup_pump", description: "Setup a PumpFun BuyBot" },
@@ -40,11 +40,11 @@ bot.api.setMyCommands([
 const menu = new Menu<MyContext>("main-menu")
 	.text("🦍", (ctx) => ctx.reply("Ape Setup"))
 	.row()
-	.text("ca", (ctx) => ctx.conversation.enter("caSetup"));
+	.text("watch.it.pump", (ctx) => ctx.conversation.enter("setupPump"));
 bot.use(menu);
 bot.command("start", (ctx) =>
 	ctx.reply(
-		`Hello ${ctx.from?.username}, You have successfully started a Telgram Bot: STON-APE!`,
+		`Hello ${ctx.from?.username}, You have successfully started the ston_ape_bot!`,
 		{
 			reply_markup: menu,
 		}
@@ -84,13 +84,20 @@ bot.on(":text").hears("ape", (ctx) => {
 	});
 });
 
+bot.on(":text", async (ctx) => {
+	console.log(ctx.message?.text);
+});
+bot.on(":text").hears("setup_pump", async (ctx) => {
+	await ctx.conversation.enter("setupPump");
+});
+
 bot.callbackQuery("ape", (ctx) => {
 	ctx.reply("We are gonna 🦍 it");
 	ctx.conversation.exit("caSetup");
 });
 bot.callbackQuery("no", (ctx) => {
 	ctx.reply("I guess you hate money 🤷‍♂️");
-	ctx.conversation.exit("caSetup");
+	ctx.conversation.exit("*");
 });
 console.log("Bot is running...");
 // bot.start();

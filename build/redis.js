@@ -28,7 +28,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getChatId = exports.getPumpData = exports.storePumpData = exports.getRedis = exports.setRedis = void 0;
+exports.getActivePumps = exports.getChatId = exports.getPumpData = exports.storePumpData = exports.getRedis = exports.setRedis = void 0;
 const dotenv = __importStar(require("dotenv"));
 const ioredis_1 = require("ioredis");
 dotenv.config();
@@ -43,12 +43,15 @@ const getRedis = (key) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getRedis = getRedis;
 function storePumpData(contract_address, chat_id) {
     return __awaiter(this, void 0, void 0, function* () {
+        yield client.sadd("active_pumps", contract_address);
         yield client.hset(contract_address, { chat_id: chat_id.toString() }, (err, res) => {
             if (err) {
                 console.log(err);
             }
             console.log(res);
         });
+        yield client.expire(contract_address, 36000);
+        yield client.expire("active_pumps", 36000);
     });
 }
 exports.storePumpData = storePumpData;
@@ -76,3 +79,20 @@ function getChatId(contractAddress) {
     });
 }
 exports.getChatId = getChatId;
+function getActivePumps() {
+    return __awaiter(this, void 0, void 0, function* () {
+        // const data = await client.keys("*", (err, data) => {
+        // 	if (err) console.error(err);
+        // 	else console.log("Data for", data);
+        // });
+        // return data;
+        const data = yield client.smembers("active_pumps", (err, data) => {
+            if (err)
+                console.error(err);
+            else
+                console.log("Data for", data);
+        });
+        return data;
+    });
+}
+exports.getActivePumps = getActivePumps;

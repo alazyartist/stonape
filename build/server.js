@@ -31,23 +31,25 @@ app.post("/", (req, res) => {
             var _a;
             const mint_addr = message.tokenTransfers[0].mint;
             const token_amt = message.tokenTransfers[0].tokenAmount;
-            const sol_spent = parseInt((_a = message.accountData) === null || _a === void 0 ? void 0 : _a[0].nativeBalanceChange) / 1000000000;
+            const sol_spent = Math.abs(parseInt((_a = message.accountData) === null || _a === void 0 ? void 0 : _a[0].nativeBalanceChange) / 1000000000);
             const chatid = yield redis_js_1.getChatId(mint_addr);
             const userWallet = message.accountData[0].account;
             const info = yield helius_js_1.getPumpTokenInfo(mint_addr);
+            const marketCap = yield utils_js_1.calculateMarketCap(sol_spent, token_amt);
             if (!chatid) {
                 console.log("No chat id found for", mint_addr);
                 return;
             }
             bot_js_1.bot.api.sendPhoto(chatid, info.image, {
                 caption: `
-				New <strong> ${info.name}</strong> Buy:
-				${info.description}
-				💸| ${sol_spent}
-				🤑|${utils_js_1.convertToK(token_amt)}
+				🚨New <b> ${info.name}</b> Buy 🚨
+				<blockquote>${info.description}</blockquote>
+				💸|SPENT <b>${sol_spent}</b>
+				🤑|Received: <b>${utils_js_1.convertToK(token_amt)}</b>
 				🔒|User Wallet <a href='https://solscan.io/account/${userWallet}'>Check User Wallet</a>
-
-
+				🎓| Market Cap ${marketCap}
+				
+				    🚀 a winning choice 🚀        
 
 				<a href='https://pump.fun/${mint_addr}'>BUY</a>
 				
