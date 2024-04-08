@@ -38,6 +38,12 @@ function calculateMarketCap(solTraded, tokensReceived) {
 exports.calculateMarketCap = calculateMarketCap;
 function calculateBondingCurve(address) {
     return __awaiter(this, void 0, void 0, function* () {
+        const connection = new web3_js_1.Connection(web3_js_1.clusterApiUrl("mainnet-beta"));
+        const token = new web3_js_1.PublicKey(address);
+        const token_supply = yield connection.getTokenSupply(token);
+        const whales = yield connection.getTokenLargestAccounts(token);
+        const total_supply = token_supply.value.uiAmount;
+        //get remaining tokens
         //TODO:
         //1- (remainging tokens -204_000_000)/800_000_000
     });
@@ -52,3 +58,31 @@ function isSolanaAddress(address) {
     }
 }
 exports.isSolanaAddress = isSolanaAddress;
+function generateBondingCurveProgress(percent) {
+    switch (true) {
+        case percent >= 0 && percent <= 9:
+            return "⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜";
+        case percent >= 10 && percent <= 19:
+            return "🟩⬜⬜⬜⬜⬜⬜⬜⬜⬜";
+        case percent >= 20 && percent <= 29:
+            return "🟩🟩⬜⬜⬜⬜⬜⬜⬜⬜";
+        case percent >= 30 && percent <= 39:
+            return "🟩🟩🟩⬜⬜⬜⬜⬜⬜⬜";
+        case percent >= 40 && percent <= 49:
+            return "🟩🟩🟩🟩⬜⬜⬜⬜⬜⬜";
+        case percent >= 50 && percent <= 59:
+            return "🟩🟩🟩🟩🟩⬜⬜⬜⬜⬜";
+        case percent >= 60 && percent <= 69:
+            return "🟩🟩🟩🟩🟩🟩⬜⬜⬜⬜";
+        case percent >= 70 && percent <= 79:
+            return "🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜";
+        case percent >= 80 && percent <= 89:
+            return "🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜";
+        case percent >= 90 && percent <= 99:
+            return "🟩🟩🟩🟩🟩🟩🟩🟩🟩⬜";
+        case percent === 100:
+            return "🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩";
+        default:
+            return "Hmmm...";
+    }
+}

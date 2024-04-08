@@ -8,6 +8,12 @@ export default async function setupPump(
 	conversation: MyConversation,
 	ctx: MyContext
 ) {
+	const telegram_user = ctx.from?.id;
+	const admins = await ctx.getChatAdministrators();
+	const isAdmin = admins.some((admin) => admin.user.id === telegram_user);
+	if (!isAdmin) {
+		return await ctx.reply("You are not an admin of this group.");
+	}
 	const tryAgainKeyboard = new InlineKeyboard().text("Try Again", "setup_pump");
 	await ctx.reply(
 		"To Setup PumpBot, you need to provide the contract address of the token. If you are adding this bot to a group.",

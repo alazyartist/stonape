@@ -14,7 +14,14 @@ const helius_1 = require("../helius");
 const redis_1 = require("../redis");
 const utils_1 = require("../utils");
 function setupPump(conversation, ctx) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        const telegram_user = (_a = ctx.from) === null || _a === void 0 ? void 0 : _a.id;
+        const admins = yield ctx.getChatAdministrators();
+        const isAdmin = admins.some((admin) => admin.user.id === telegram_user);
+        if (!isAdmin) {
+            return yield ctx.reply("You are not an admin of this group.");
+        }
         const tryAgainKeyboard = new grammy_1.InlineKeyboard().text("Try Again", "setup_pump");
         yield ctx.reply("To Setup PumpBot, you need to provide the contract address of the token. If you are adding this bot to a group.", {
             reply_markup: { force_reply: true },
@@ -42,9 +49,9 @@ function setupPump(conversation, ctx) {
             parse_mode: "HTML",
         });
         yield conversation.waitForCallbackQuery(["yes", "no"]).then((ctx) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
-            if (((_a = ctx.callbackQuery) === null || _a === void 0 ? void 0 : _a.data) === "yes") {
-                const chat_id = (_b = ctx.chat) === null || _b === void 0 ? void 0 : _b.id;
+            var _b, _c;
+            if (((_b = ctx.callbackQuery) === null || _b === void 0 ? void 0 : _b.data) === "yes") {
+                const chat_id = (_c = ctx.chat) === null || _c === void 0 ? void 0 : _c.id;
                 yield redis_1.storePumpData(contract_address, chat_id);
                 const addressAdded = yield conversation.external(() => helius_1.updateWebhookAddresses());
                 if (!addressAdded) {

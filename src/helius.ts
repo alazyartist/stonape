@@ -1,8 +1,20 @@
 import { getActivePumps } from "./redis";
+const WEBHOOK_ID =
+	process.env.MODE === "DEV"
+		? process.env.WEBHOOK_DEV_ID
+		: process.env.WEBHOOK_ID;
+const WEBHOOK_URL =
+	process.env.MODE === "DEV"
+		? process.env.WEBHOOK_DEV_URL
+		: process.env.WEBHOOK_URL;
+const HELIUS_KEY =
+	process.env.MODE === "DEV"
+		? process.env.HELIUS_DEV_KEY
+		: process.env.HELIUS_KEY;
 
 async function getPumpTokenInfo(contract_address: string) {
 	const response = await fetch(
-		`https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_KEY}`,
+		`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`,
 		{
 			method: "POST",
 			headers: {
@@ -31,14 +43,14 @@ async function getPumpTokenInfo(contract_address: string) {
 async function updateWebhookAddresses() {
 	const addresses = await getActivePumps();
 	const response = await fetch(
-		`https://api.helius.xyz/v0/webhooks/${process.env.WEBHOOK_ID}?api-key=${process.env.HELIUS_KEY}`,
+		`https://api.helius.xyz/v0/webhooks/${WEBHOOK_ID}?api-key=${HELIUS_KEY}`,
 		{
 			method: "PUT",
 			headers: {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				webhookUrl: process.env.WEBHOOK_URL,
+				webhookUrl: WEBHOOK_URL,
 				transactionTypes: ["TRANSFER", "SWAP"],
 				accountAddresses: addresses,
 				webhookType: "enhanced",

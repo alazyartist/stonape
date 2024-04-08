@@ -30,21 +30,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bot = void 0;
 const dotenv = __importStar(require("dotenv"));
 const conversations_1 = require("@grammyjs/conversations");
 const grammy_1 = require("grammy");
 const menu_1 = require("@grammyjs/menu");
+const web3_js_1 = require("@solana/web3.js");
 const casetup_1 = require("./conversations/casetup");
 const about_1 = __importDefault(require("./commands/about"));
 const topPools_1 = require("./commands/topPools");
 const setupPump_1 = __importDefault(require("./conversations/setupPump"));
 const listPumps_1 = require("./commands/listPumps");
 dotenv.config();
-console.log((_a = process.env) === null || _a === void 0 ? void 0 : _a.TELEGRAM_TOKEN);
-exports.bot = new grammy_1.Bot(process.env.TELEGRAM_TOKEN);
+const BOT_TOKEN = process.env.MODE === "DEV"
+    ? process.env.TELEGRAM_DEV_TOKEN
+    : process.env.TELEGRAM_TOKEN;
+exports.bot = new grammy_1.Bot(BOT_TOKEN);
 exports.bot.use(grammy_1.session({ initial: () => ({}) }));
 exports.bot.use(conversations_1.conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
@@ -65,10 +67,7 @@ exports.bot.api.setMyCommands([
     { command: "ca", description: "Setup a contract address" },
     { command: "setup_pump", description: "Setup a PumpFun BuyBot" },
 ]);
-const menu = new menu_1.Menu("main-menu")
-    .text("🦍", (ctx) => ctx.reply("Ape Setup"))
-    .row()
-    .text("watch.it.pump", (ctx) => ctx.conversation.enter("setupPump"));
+const menu = new menu_1.Menu("main-menu").text("watch.it.pump", (ctx) => ctx.conversation.enter("setupPump"));
 exports.bot.use(menu);
 exports.bot.command("start", (ctx) => {
     var _a;
@@ -78,6 +77,17 @@ exports.bot.command("start", (ctx) => {
 });
 exports.bot.command("ca", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("caSetup");
+}));
+exports.bot.command("test", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    const connection = new web3_js_1.Connection(web3_js_1.clusterApiUrl("mainnet-beta"));
+    const token = new web3_js_1.PublicKey("DtFjJtZs1N1Mi1SR5aUyfigAT1ssLEUHeruZPF3QNy6F");
+    const token_supply = yield connection.getTokenSupply(token);
+    const whales = yield connection.getTokenLargestAccounts(token);
+    const total_supply = token_supply.value.uiAmount;
+    console.log(total_supply);
+    console.log(whales);
+    ctx.reply("test ran");
+    ctx.reply("total_supply is " + total_supply);
 }));
 exports.bot.command("top", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield topPools_1.topPools(ctx);
@@ -89,8 +99,8 @@ exports.bot.command("list_pumps", (ctx) => __awaiter(void 0, void 0, void 0, fun
     yield listPumps_1.listPumps(ctx);
 }));
 exports.bot.command("chatid", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
-    console.log((_b = ctx.chat) === null || _b === void 0 ? void 0 : _b.id);
+    var _a;
+    console.log((_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id);
 }));
 exports.bot.command("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("setupPump");

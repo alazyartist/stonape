@@ -18,7 +18,7 @@ const redis_js_1 = require("./redis.js");
 const helius_js_1 = require("./helius.js");
 const utils_js_1 = require("./utils.js");
 const app = express_1.default();
-const port = 3000;
+const port = 80;
 // Middleware to parse incoming requests with JSON payloads
 app.use(express_1.default.json());
 bot_js_1.bot.start();
@@ -45,8 +45,7 @@ app.post("/", (req, res) => {
                 return;
             }
             bot_js_1.bot.api.sendPhoto(chatid, info.image, {
-                caption: `
-				🚨New <b> ${info.name}</b> Buy 🚨
+                caption: `🚨New <b> ${info.name}</b> Buy 🚨
 				<blockquote>${info.description}</blockquote>
 				💸|SPENT <b>${sol_spent}</b>
 				🤑|Received: <b>${utils_js_1.convertToK(token_amt)}</b>
@@ -96,5 +95,13 @@ app.post("/", (req, res) => {
 });
 // Start the server
 app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
+    if (process.env.MODE === "DEV") {
+        console.log(`
+		Server listening at http://localhost:${port} 
+		IN DEV MODE
+		`);
+    }
+    else {
+        console.log(`Server listening at http://localhost:${port}`);
+    }
 });

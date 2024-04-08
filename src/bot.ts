@@ -7,6 +7,7 @@ import {
 } from "@grammyjs/conversations";
 import { Bot, Context, session } from "grammy";
 import { Menu } from "@grammyjs/menu";
+import { PublicKey, Connection, clusterApiUrl } from "@solana/web3.js";
 
 import { caSetup } from "./conversations/casetup";
 import aboutToken from "./commands/about";
@@ -14,11 +15,14 @@ import { topPools } from "./commands/topPools";
 import setupPump from "./conversations/setupPump";
 import { listPumps } from "./commands/listPumps";
 dotenv.config();
-console.log(process.env?.TELEGRAM_TOKEN as string);
+
 type MyContext = Context & ConversationFlavor;
 type MyConversation = Conversation<MyContext>;
-
-export const bot = new Bot<MyContext>(process.env.TELEGRAM_TOKEN);
+const BOT_TOKEN =
+	process.env.MODE === "DEV"
+		? process.env.TELEGRAM_DEV_TOKEN
+		: process.env.TELEGRAM_TOKEN;
+export const bot = new Bot<MyContext>(BOT_TOKEN as string);
 bot.use(session({ initial: () => ({}) }));
 bot.use(conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
@@ -40,10 +44,9 @@ bot.api.setMyCommands([
 	{ command: "ca", description: "Setup a contract address" },
 	{ command: "setup_pump", description: "Setup a PumpFun BuyBot" },
 ]);
-const menu = new Menu<MyContext>("main-menu")
-	.text("🦍", (ctx) => ctx.reply("Ape Setup"))
-	.row()
-	.text("watch.it.pump", (ctx) => ctx.conversation.enter("setupPump"));
+const menu = new Menu<MyContext>("main-menu").text("watch.it.pump", (ctx) =>
+	ctx.conversation.enter("setupPump")
+);
 bot.use(menu);
 bot.command("start", (ctx) =>
 	ctx.reply(
@@ -55,6 +58,17 @@ bot.command("start", (ctx) =>
 );
 bot.command("ca", async (ctx) => {
 	await ctx.conversation.enter("caSetup");
+});
+bot.command("test", async (ctx) => {
+	const connection = new Connection(clusterApiUrl("mainnet-beta"));
+	const token = new PublicKey("DtFjJtZs1N1Mi1SR5aUyfigAT1ssLEUHeruZPF3QNy6F");
+	const token_supply = await connection.getTokenSupply(token);
+	const whales = await connection.getTokenLargestAccounts(token);
+	const total_supply = token_supply.value.uiAmount;
+	console.log(total_supply);
+	console.log(whales);
+	ctx.reply("test ran");
+	ctx.reply("total_supply is " + total_supply);
 });
 bot.command("top", async (ctx) => {
 	await topPools(ctx);

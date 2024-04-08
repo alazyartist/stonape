@@ -4,7 +4,7 @@ import { getChatId } from "./redis.js";
 import { getPumpTokenInfo } from "./helius.js";
 import { calculateMarketCap, convertToK } from "./utils.js";
 const app = express();
-const port = 3000;
+const port = 80;
 // Middleware to parse incoming requests with JSON payloads
 app.use(express.json());
 bot.start();
@@ -31,9 +31,9 @@ app.post("/", (req: Request, res: Response) => {
 				console.log("No chat id found for", mint_addr);
 				return;
 			}
+
 			bot.api.sendPhoto(chatid, info.image, {
-				caption: `
-				🚨New <b> ${info.name}</b> Buy 🚨
+				caption: `🚨New <b> ${info.name}</b> Buy 🚨
 				<blockquote>${info.description}</blockquote>
 				💸|SPENT <b>${sol_spent}</b>
 				🤑|Received: <b>${convertToK(token_amt)}</b>
@@ -88,5 +88,12 @@ app.post("/", (req: Request, res: Response) => {
 
 // Start the server
 app.listen(port, () => {
-	console.log(`Server listening at http://localhost:${port}`);
+	if (process.env.MODE === "DEV") {
+		console.log(`
+		Server listening at http://localhost:${port} 
+		IN DEV MODE
+		`);
+	} else {
+		console.log(`Server listening at http://localhost:${port}`);
+	}
 });
