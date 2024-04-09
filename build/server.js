@@ -39,7 +39,7 @@ const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 const utils_js_1 = require("./utils.js");
 const app = express_1.default();
-const port = 80;
+const port = process.env.MODE === "DEV" ? 80 : 5000;
 // Middleware to parse incoming requests with JSON payloads
 app.use(express_1.default.json());
 bot_js_1.bot.start();

@@ -10,7 +10,7 @@ import {
 	calculateBondingCurve,
 } from "./utils.js";
 const app = express();
-const port = 80;
+const port = process.env.MODE === "DEV" ? 80 : 5000;
 // Middleware to parse incoming requests with JSON payloads
 app.use(express.json());
 bot.start();

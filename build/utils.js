@@ -9,9 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateBondingCurveProgress = exports.calculateBondingCurve = exports.isSolanaAddress = exports.calculateMarketCap = exports.convertToK = void 0;
+exports.getChatAdministrators = exports.generateBondingCurveProgress = exports.calculateBondingCurve = exports.isSolanaAddress = exports.calculateMarketCap = exports.convertToK = void 0;
 const web3_js_1 = require("@solana/web3.js");
 const redis_1 = require("./redis");
+const bot_1 = require("./bot");
 function convertToK(value) {
     if (parseFloat(value) < 1000)
         return value;
@@ -143,3 +144,25 @@ function generateBondingCurveProgress(percent) {
     }
 }
 exports.generateBondingCurveProgress = generateBondingCurveProgress;
+function getChatAdministrators(chatId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const admins = yield bot_1.bot.api.getChatAdministrators(chatId);
+            return admins;
+        }
+        catch (error) {
+            if (error.error_code === 400 && error.parameters && error.parameters.migrate_to_chat_id) {
+                // Group was upgraded to supergroup, use the new chat ID
+                const newChatId = error.parameters.migrate_to_chat_id;
+                // Update the stored chat ID in your system here
+                // ...
+                return yield bot_1.bot.api.getChatAdministrators(newChatId);
+            }
+            else {
+                // Handle other errors or rethrow them
+                throw error;
+            }
+        }
+    });
+}
+exports.getChatAdministrators = getChatAdministrators;

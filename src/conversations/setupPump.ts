@@ -2,7 +2,7 @@ import { InlineKeyboard } from "grammy";
 import { MyContext, MyConversation } from "../bot";
 import { updateWebhookAddresses, getPumpTokenInfo } from "../helius";
 import { storePumpData } from "../redis";
-import { isSolanaAddress } from "../utils";
+import { isSolanaAddress, getChatAdministrators } from "../utils";
 
 export default async function setupPump(
 	conversation: MyConversation,
@@ -10,7 +10,7 @@ export default async function setupPump(
 ) {
 	const telegram_user = ctx.from?.id;
 	const telegram_username = ctx.from?.username;
-	const admins = await ctx.getChatAdministrators();
+	const admins = await getChatAdministrators(ctx.chat?.id as number);
 	const isAdmin = admins.some((admin) => admin.user.id === telegram_user);
 	if (!isAdmin) {
 		return await ctx.reply("You are not an admin of this group.");

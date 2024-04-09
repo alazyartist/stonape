@@ -14,11 +14,11 @@ const helius_1 = require("../helius");
 const redis_1 = require("../redis");
 const utils_1 = require("../utils");
 function setupPump(conversation, ctx) {
-    var _a, _b;
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         const telegram_user = (_a = ctx.from) === null || _a === void 0 ? void 0 : _a.id;
         const telegram_username = (_b = ctx.from) === null || _b === void 0 ? void 0 : _b.username;
-        const admins = yield ctx.getChatAdministrators();
+        const admins = yield utils_1.getChatAdministrators((_c = ctx.chat) === null || _c === void 0 ? void 0 : _c.id);
         const isAdmin = admins.some((admin) => admin.user.id === telegram_user);
         if (!isAdmin) {
             return yield ctx.reply("You are not an admin of this group.");
@@ -51,10 +51,10 @@ function setupPump(conversation, ctx) {
                 parse_mode: "HTML",
             });
             yield conversation.waitForCallbackQuery(["yes", "no"]).then((ctx) => __awaiter(this, void 0, void 0, function* () {
-                var _c, _d, _e;
-                if (((_c = ctx.callbackQuery) === null || _c === void 0 ? void 0 : _c.data) === "yes") {
-                    const chat_id = (_d = ctx.chat) === null || _d === void 0 ? void 0 : _d.id;
-                    const group_name = (_e = ctx.chat) === null || _e === void 0 ? void 0 : _e.id.toString();
+                var _d, _e, _f;
+                if (((_d = ctx.callbackQuery) === null || _d === void 0 ? void 0 : _d.data) === "yes") {
+                    const chat_id = (_e = ctx.chat) === null || _e === void 0 ? void 0 : _e.id;
+                    const group_name = (_f = ctx.chat) === null || _f === void 0 ? void 0 : _f.id.toString();
                     yield redis_1.storePumpData(contract_address, chat_id, group_name);
                     const addressAdded = yield conversation.external(() => helius_1.updateWebhookAddresses());
                     if (!addressAdded) {
