@@ -1,4 +1,6 @@
-import { getActivePumps } from "./redis";
+import { getActivePumps, getTokenInfo, storeTokenInfo } from "./redis";
+import * as dotenv from "dotenv";
+dotenv.config();
 const WEBHOOK_ID =
 	process.env.MODE === "DEV"
 		? process.env.WEBHOOK_DEV_ID
@@ -13,34 +15,56 @@ const HELIUS_KEY =
 		: process.env.HELIUS_KEY;
 
 async function getPumpTokenInfo(contract_address: string) {
-	const response = await fetch(
-		`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`,
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				jsonrpc: "2.0",
-				id: "text",
-				method: "getAsset",
-				params: { id: contract_address },
-			}),
+	const info = await getTokenInfo(contract_address);
+	if (info) {
+		return JSON.parse(info);
+	}
+	if (!info) {
+		const response = await fetch(
+			`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					jsonrpc: "2.0",
+					id: "text",
+					method: "getAsset",
+					params: { id: contract_address },
+				}),
+			}
+		);
+		const data = await response.json();
+		console.log(data.result);
+		const metadata = data?.result?.content?.metadata;
+		const image = data?.result?.content?.links?.image;
+
+		const newInfo = {
+			name: metadata?.name,
+			symbol: metadata?.symbol,
+			description: metadata?.description,
+			image: image,
+			program_id: data?.result?.token_info?.token_program,
+		};
+		if (
+			!newInfo.name ||
+			!newInfo.symbol ||
+			!newInfo.description ||
+			!newInfo.image ||
+			!newInfo.program_id
+		) {
+			console.error("No token info found for", contract_address);
+			return null;
 		}
-	);
-	const data = await response.json();
-	console.log(data.result);
-	const metadata = data.result.content.metadata;
-	const image = data.result.content.links.image;
-	return {
-		name: metadata.name,
-		symbol: metadata.symbol,
-		description: metadata.description,
-		image: image,
-	};
+		await storeTokenInfo(contract_address, newInfo);
+		return newInfo;
+	}
 }
 //useful methods getTokenSupply  getTokenLargestAccounts
 async function updateWebhookAddresses() {
+	console.log("webhook id", WEBHOOK_ID);
+	console.log("helius key", HELIUS_KEY);
 	const addresses = await getActivePumps();
 	const response = await fetch(
 		`https://api.helius.xyz/v0/webhooks/${WEBHOOK_ID}?api-key=${HELIUS_KEY}`,

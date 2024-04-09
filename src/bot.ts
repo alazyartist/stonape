@@ -7,13 +7,16 @@ import {
 } from "@grammyjs/conversations";
 import { Bot, Context, session } from "grammy";
 import { Menu } from "@grammyjs/menu";
-import { PublicKey, Connection, clusterApiUrl } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 
+import { calculateBondingCurve } from "./utils";
 import { caSetup } from "./conversations/casetup";
 import aboutToken from "./commands/about";
 import { topPools } from "./commands/topPools";
 import setupPump from "./conversations/setupPump";
 import { listPumps } from "./commands/listPumps";
+import removePump from "./conversations/removePump";
+
 dotenv.config();
 
 type MyContext = Context & ConversationFlavor;
@@ -34,6 +37,7 @@ bot.catch((err) => {
 bot.use(createConversation(caSetup));
 bot.use(createConversation(aboutToken));
 bot.use(createConversation(setupPump));
+bot.use(createConversation(removePump));
 
 bot.api.setMyCommands([
 	{ command: "start", description: "Start the Bot" },
@@ -43,14 +47,16 @@ bot.api.setMyCommands([
 	{ command: "top", description: "Get Top Pools on TON" },
 	{ command: "ca", description: "Setup a contract address" },
 	{ command: "setup_pump", description: "Setup a PumpFun BuyBot" },
+	{ command: "remove_pump", description: "Remove a PumpFun BuyBot" },
 ]);
 const menu = new Menu<MyContext>("main-menu").text("watch.it.pump", (ctx) =>
 	ctx.conversation.enter("setupPump")
 );
 bot.use(menu);
+
 bot.command("start", (ctx) =>
 	ctx.reply(
-		`Welcome ${ctx.from?.username}, You have successfully started the ston_ape_bot!`,
+		`Welcome ${ctx.from?.username}, You have successfully started watch.it.pump!`,
 		{
 			reply_markup: menu,
 		}
@@ -59,17 +65,52 @@ bot.command("start", (ctx) =>
 bot.command("ca", async (ctx) => {
 	await ctx.conversation.enter("caSetup");
 });
-bot.command("test", async (ctx) => {
-	const connection = new Connection(clusterApiUrl("mainnet-beta"));
-	const token = new PublicKey("DtFjJtZs1N1Mi1SR5aUyfigAT1ssLEUHeruZPF3QNy6F");
-	const token_supply = await connection.getTokenSupply(token);
-	const whales = await connection.getTokenLargestAccounts(token);
-	const total_supply = token_supply.value.uiAmount;
-	console.log(total_supply);
-	console.log(whales);
-	ctx.reply("test ran");
-	ctx.reply("total_supply is " + total_supply);
-});
+
+// bot.command("test", async (ctx) => {
+// 	// 	try {
+// 	// 		const connection = new Connection(clusterApiUrl("mainnet-beta"));
+// 	// 		// "DtFjJtZs1N1Mi1SR5aUyfigAT1ssLEUHeruZPF3QNy6F"
+// 	const token_addr = new PublicKey(
+// 		"4k6HZsdxbbyU3HnJzV9UB1DBEWWvsQewEMsQaW6mx1df"
+// 	);
+// 	const bonding_curve_addr = new PublicKey(
+// 		"Ch6wJvWbNzZ2EAyPr63Wy4LxHzLroTa4JaDQx3YYJaVt"
+// 	);
+// 	const PROGRAM_ID = new PublicKey(
+// 		"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+// 	);
+// 	const bc = await calculateBondingCurve(
+// 		token_addr,
+// 		bonding_curve_addr,
+// 		PROGRAM_ID
+// 	);
+// 	if (bc.progress_bar) ctx.reply(bc.progress_bar);
+// 		// const token_mint = await getMint(connection, token_addr);
+// 		// console.log("token_mint", token_mint);
+// 		// const token_account = await connection.getTokenAccountBalance(token_addr);
+// 		// console.log("tokenaccount", token_account);
+// 		let token_account = await connection.getParsedTokenAccountsByOwner(
+// 			bonding_curve_addr,
+// 			{
+// 				mint: token_addr,
+// 			}
+// 		);
+// 		const token_account_addr = token_account.value[0].pubkey;
+// 		console.log("tokenaccount", token_account.value[0].pubkey);
+// 		const token_supply = await connection.getTokenAccountBalance(
+// 			token_account_addr
+// 		);
+// 		console.log("token_supply", token_supply);
+
+// 		const total_supply = token_supply.value.uiAmount;
+// 		console.log(total_supply);
+// 		ctx.reply("test ran");
+// 		ctx.reply("total_supply is " + total_supply);
+// 	} catch (err) {
+// 		console.log(err);
+// 		ctx.reply("An error occurred");
+// 	}
+// });
 bot.command("top", async (ctx) => {
 	await topPools(ctx);
 });
@@ -85,11 +126,17 @@ bot.command("chatid", async (ctx) => {
 bot.command("setup_pump", async (ctx) => {
 	await ctx.conversation.enter("setupPump");
 });
+bot.command("remove_pump", async (ctx) => {
+	await ctx.conversation.enter("removePump");
+});
 bot.callbackQuery("about", async (ctx) => {
 	console.log(ctx.match);
 });
 bot.callbackQuery("ca_setup", async (ctx) => {
 	await ctx.conversation.enter("caSetup");
+});
+bot.callbackQuery("setup_pump", async (ctx) => {
+	await ctx.conversation.enter("setupPump");
 });
 bot.on(":text").hears("ape", (ctx) => {
 	ctx.reply("🦍", {
@@ -105,7 +152,8 @@ bot.on(":text").hears("ape", (ctx) => {
 });
 
 bot.on(":text", async (ctx) => {
-	console.log(ctx.message);
+	console.log(ctx);
+	console.log(ctx.chat);
 });
 
 bot.on(":text").hears("watch.it.pump", async (ctx) => {

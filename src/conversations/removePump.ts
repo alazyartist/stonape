@@ -1,10 +1,10 @@
 import { InlineKeyboard } from "grammy";
 import { MyContext, MyConversation } from "../bot";
 import { updateWebhookAddresses, getPumpTokenInfo } from "../helius";
-import { storePumpData } from "../redis";
+import { storePumpData, clearPumpData } from "../redis";
 import { isSolanaAddress } from "../utils";
 
-export default async function setupPump(
+export default async function removePump(
 	conversation: MyConversation,
 	ctx: MyContext
 ) {
@@ -22,7 +22,7 @@ export default async function setupPump(
 			"setup_pump"
 		);
 		await ctx.reply(
-			`@${telegram_username} To Setup PumpBot, you need to provide the contract address of the token. If you are adding this bot to a group.`,
+			`@${telegram_username} To Remove PumpBot, you need to provide the contract address of the token. If you are adding this bot to a group.`,
 			{
 				reply_markup: { force_reply: true, selective: true },
 			}
@@ -35,9 +35,9 @@ export default async function setupPump(
 			});
 		}
 
-		const info = await conversation.external(() =>
-			getPumpTokenInfo(contract_address)
-		);
+		const info = await conversation.external(() => {
+			getPumpTokenInfo(contract_address);
+		});
 		const { image, name, description, symbol } = info;
 		const keyboard = new InlineKeyboard().text("Yes", "yes").text("No", "no");
 		await ctx.replyWithPhoto(image, {
@@ -45,8 +45,9 @@ export default async function setupPump(
         <code>${contract_address}</code>
         Token Name: ${name}
         Token Symbol: ${symbol}
-        Token Description: ${description.slice(0, 60)}...
+        Token Description: ${description.slice(0, 40)}...
 
+		<b> You want to remove from ${ctx.chat}</b>
         <b> Is this correct?</b>`,
 			reply_markup: keyboard,
 			parse_mode: "HTML",
@@ -55,24 +56,24 @@ export default async function setupPump(
 		await conversation.waitForCallbackQuery(["yes", "no"]).then(async (ctx) => {
 			if (ctx.callbackQuery?.data === "yes") {
 				const chat_id = ctx.chat?.id as number;
-
-				const group_name = ctx.chat?.id.toString() as string;
-				await storePumpData(contract_address, chat_id, group_name);
-				const addressAdded = await conversation.external(() =>
+				await clearPumpData(contract_address);
+				const addressRemoved = await conversation.external(() =>
 					updateWebhookAddresses()
 				);
-				if (!addressAdded) {
-					return await ctx.reply("Failed to add address to webhook", {
+				if (!addressRemoved) {
+					return await ctx.reply("Failed to remove address from webhook", {
 						reply_markup: tryAgainKeyboard,
 					});
 				}
 
-				await ctx.reply("Setting up PumpBot...");
+				await ctx.reply("Cleaning Up PumpBot...");
 				await ctx.reply(
-					"PumpBot has been successfully setup. You will now receive notifications for the token for 10 Hours."
+					"PumpBot has been successfully stopped. You can start it again by using /setup_pump."
 				);
 				await ctx.reply(
-					"Please allow 2 to 3 minutes for the bot to start pulling in Buys."
+					`Please allow 2 to 3 minutes for the bot to stop pulling in Buys.
+					WE HOPE YOU ENJOYED IT!
+					`
 				);
 			} else {
 				await ctx.reply("PumpBot setup cancelled.");

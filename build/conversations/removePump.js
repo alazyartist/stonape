@@ -13,7 +13,7 @@ const grammy_1 = require("grammy");
 const helius_1 = require("../helius");
 const redis_1 = require("../redis");
 const utils_1 = require("../utils");
-function setupPump(conversation, ctx) {
+function removePump(conversation, ctx) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         const telegram_user = (_a = ctx.from) === null || _a === void 0 ? void 0 : _a.id;
@@ -26,7 +26,7 @@ function setupPump(conversation, ctx) {
         }
         if (isAdmin) {
             const tryAgainKeyboard = new grammy_1.InlineKeyboard().text("Try Again", "setup_pump");
-            yield ctx.reply(`@${telegram_username} To Setup PumpBot, you need to provide the contract address of the token. If you are adding this bot to a group.`, {
+            yield ctx.reply(`@${telegram_username} To Remove PumpBot, you need to provide the contract address of the token. If you are adding this bot to a group.`, {
                 reply_markup: { force_reply: true, selective: true },
             });
             const { message } = yield conversation.wait();
@@ -36,7 +36,9 @@ function setupPump(conversation, ctx) {
                     reply_markup: tryAgainKeyboard,
                 });
             }
-            const info = yield conversation.external(() => helius_1.getPumpTokenInfo(contract_address));
+            const info = yield conversation.external(() => {
+                helius_1.getPumpTokenInfo(contract_address);
+            });
             const { image, name, description, symbol } = info;
             const keyboard = new grammy_1.InlineKeyboard().text("Yes", "yes").text("No", "no");
             yield ctx.replyWithPhoto(image, {
@@ -44,27 +46,29 @@ function setupPump(conversation, ctx) {
         <code>${contract_address}</code>
         Token Name: ${name}
         Token Symbol: ${symbol}
-        Token Description: ${description.slice(0, 60)}...
+        Token Description: ${description.slice(0, 40)}...
 
+		<b> You want to remove from ${ctx.chat}</b>
         <b> Is this correct?</b>`,
                 reply_markup: keyboard,
                 parse_mode: "HTML",
             });
             yield conversation.waitForCallbackQuery(["yes", "no"]).then((ctx) => __awaiter(this, void 0, void 0, function* () {
-                var _c, _d, _e;
+                var _c, _d;
                 if (((_c = ctx.callbackQuery) === null || _c === void 0 ? void 0 : _c.data) === "yes") {
                     const chat_id = (_d = ctx.chat) === null || _d === void 0 ? void 0 : _d.id;
-                    const group_name = (_e = ctx.chat) === null || _e === void 0 ? void 0 : _e.id.toString();
-                    yield redis_1.storePumpData(contract_address, chat_id, group_name);
-                    const addressAdded = yield conversation.external(() => helius_1.updateWebhookAddresses());
-                    if (!addressAdded) {
-                        return yield ctx.reply("Failed to add address to webhook", {
+                    yield redis_1.clearPumpData(contract_address);
+                    const addressRemoved = yield conversation.external(() => helius_1.updateWebhookAddresses());
+                    if (!addressRemoved) {
+                        return yield ctx.reply("Failed to remove address from webhook", {
                             reply_markup: tryAgainKeyboard,
                         });
                     }
-                    yield ctx.reply("Setting up PumpBot...");
-                    yield ctx.reply("PumpBot has been successfully setup. You will now receive notifications for the token for 10 Hours.");
-                    yield ctx.reply("Please allow 2 to 3 minutes for the bot to start pulling in Buys.");
+                    yield ctx.reply("Cleaning Up PumpBot...");
+                    yield ctx.reply("PumpBot has been successfully stopped. You can start it again by using /setup_pump.");
+                    yield ctx.reply(`Please allow 2 to 3 minutes for the bot to stop pulling in Buys.
+					WE HOPE YOU ENJOYED IT!
+					`);
                 }
                 else {
                     yield ctx.reply("PumpBot setup cancelled.");
@@ -73,4 +77,4 @@ function setupPump(conversation, ctx) {
         }
     });
 }
-exports.default = setupPump;
+exports.default = removePump;

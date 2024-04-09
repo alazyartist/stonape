@@ -51,11 +51,10 @@ function setupPump(conversation, ctx) {
                 parse_mode: "HTML",
             });
             yield conversation.waitForCallbackQuery(["yes", "no"]).then((ctx) => __awaiter(this, void 0, void 0, function* () {
-                var _c, _d, _e;
+                var _c, _d;
                 if (((_c = ctx.callbackQuery) === null || _c === void 0 ? void 0 : _c.data) === "yes") {
                     const chat_id = (_d = ctx.chat) === null || _d === void 0 ? void 0 : _d.id;
-                    const group_name = (_e = ctx.chat) === null || _e === void 0 ? void 0 : _e.id.toString();
-                    yield redis_1.storePumpData(contract_address, chat_id, group_name);
+                    yield redis_1.storePumpData(contract_address, chat_id);
                     const addressAdded = yield conversation.external(() => helius_1.updateWebhookAddresses());
                     if (!addressAdded) {
                         return yield ctx.reply("Failed to add address to webhook", {

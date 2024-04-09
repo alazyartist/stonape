@@ -28,11 +28,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getActivePumps = exports.getChatId = exports.getPumpData = exports.storePumpData = exports.getRedis = exports.setRedis = void 0;
+exports.getGroupName = exports.clearPumpData = exports.getSolanaPrice = exports.storeSolanaPrice = exports.storeTokenInfo = exports.getTokenInfo = exports.getActivePumps = exports.getChatId = exports.getPumpData = exports.storePumpData = exports.getRedis = exports.setRedis = exports.client = void 0;
 const dotenv = __importStar(require("dotenv"));
 const ioredis_1 = require("ioredis");
+const helius_1 = require("./helius");
 dotenv.config();
 const client = new ioredis_1.Redis(process.env.UPSTASH_URL);
+exports.client = client;
 const setRedis = (key, value) => __awaiter(void 0, void 0, void 0, function* () {
     client.set(key, value);
 });
@@ -41,10 +43,10 @@ const getRedis = (key) => __awaiter(void 0, void 0, void 0, function* () {
     return client.get(key);
 });
 exports.getRedis = getRedis;
-function storePumpData(contract_address, chat_id) {
+function storePumpData(contract_address, chat_id, group_name) {
     return __awaiter(this, void 0, void 0, function* () {
         yield client.sadd("active_pumps", contract_address);
-        yield client.hset(contract_address, { chat_id: chat_id.toString() }, (err, res) => {
+        yield client.hset(contract_address, { chat_id: chat_id.toString(), group_name: group_name }, (err, res) => {
             if (err) {
                 console.log(err);
             }
@@ -55,13 +57,37 @@ function storePumpData(contract_address, chat_id) {
     });
 }
 exports.storePumpData = storePumpData;
+function storeTokenInfo(contract_address, token_info) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield client.hset(contract_address, { token_info: JSON.stringify(token_info) }, (err, res) => {
+            if (err) {
+                console.log(err);
+            }
+            console.log(res);
+        });
+        yield client.expire(contract_address, 500);
+    });
+}
+exports.storeTokenInfo = storeTokenInfo;
+function getTokenInfo(contract_address) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = yield client.hget(contract_address, "token_info", (err, data) => {
+            if (err)
+                console.error(err);
+            else
+                console.log("TOKEN_INFO from redis", contract_address, data);
+        });
+        return data;
+    });
+}
+exports.getTokenInfo = getTokenInfo;
 function getPumpData(contractAddress) {
     return __awaiter(this, void 0, void 0, function* () {
         const data = yield client.hgetall(contractAddress, (err, data) => {
             if (err)
                 console.error(err);
             else
-                console.log("Data for", contractAddress, data);
+                console.log("PumpData fromRedis", contractAddress, data);
         });
         return data;
     });
@@ -73,12 +99,24 @@ function getChatId(contractAddress) {
             if (err)
                 console.error(err);
             else
-                console.log("Data for", contractAddress, data);
+                console.log("chat_id from reids", contractAddress, data);
         });
         return Promise.resolve(data);
     });
 }
 exports.getChatId = getChatId;
+function getGroupName(contractAddress) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = yield client.hget(contractAddress, "group_name", (err, data) => {
+            if (err)
+                console.error(err);
+            else
+                console.log("group_name from reids", contractAddress, data);
+        });
+        return Promise.resolve(data);
+    });
+}
+exports.getGroupName = getGroupName;
 function getActivePumps() {
     return __awaiter(this, void 0, void 0, function* () {
         // const data = await client.keys("*", (err, data) => {
@@ -96,3 +134,34 @@ function getActivePumps() {
     });
 }
 exports.getActivePumps = getActivePumps;
+function clearPumpData(contractAddress) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield client.del(contractAddress);
+        yield client.srem("active_pumps", contractAddress);
+        helius_1.updateWebhookAddresses();
+    });
+}
+exports.clearPumpData = clearPumpData;
+function storeSolanaPrice(price) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!price)
+            return;
+        if (price === null)
+            return;
+        yield client.set("solana_price", price.toString());
+        yield client.expire("solana_price", 540);
+    });
+}
+exports.storeSolanaPrice = storeSolanaPrice;
+function getSolanaPrice() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const data = yield client.get("solana_price", (err, data) => {
+            if (err)
+                console.error(err);
+            else
+                console.log("Solana PRICE:", data);
+        });
+        return data;
+    });
+}
+exports.getSolanaPrice = getSolanaPrice;
