@@ -13,8 +13,7 @@ const app = express();
 const port = process.env.MODE === "DEV" ? 80 : 5000;
 // Middleware to parse incoming requests with JSON payloads
 app.use(express.json());
-bot.start({onStart:(botInfo,done)}=>
-bot.api.getUpdates({offset:-1}).then((updates)=>done()));
+bot.start();
 // const chatid = "-4188325364";
 // Route for handling POST requests
 app.get("/", (req: Request, res: Response) => {

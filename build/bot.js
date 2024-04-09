@@ -42,11 +42,15 @@ const topPools_1 = require("./commands/topPools");
 const setupPump_1 = __importDefault(require("./conversations/setupPump"));
 const listPumps_1 = require("./commands/listPumps");
 const removePump_1 = __importDefault(require("./conversations/removePump"));
+const grammy_middlewares_1 = require("grammy-middlewares");
 dotenv.config();
 const BOT_TOKEN = process.env.MODE === "DEV"
     ? process.env.TELEGRAM_DEV_TOKEN
     : process.env.TELEGRAM_TOKEN;
 exports.bot = new grammy_1.Bot(BOT_TOKEN);
+exports.bot.use(grammy_middlewares_1.ignoreOld(60), grammy_middlewares_1.onlyPublic((ctx) => {
+    ctx.reply("This bot is only available in public groups");
+}));
 exports.bot.use(grammy_1.session({ initial: () => ({}) }));
 exports.bot.use(conversations_1.conversations());
 // bot.api.getMe().then(console.log).catch(console.error);

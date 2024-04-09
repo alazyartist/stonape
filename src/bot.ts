@@ -16,6 +16,7 @@ import { topPools } from "./commands/topPools";
 import setupPump from "./conversations/setupPump";
 import { listPumps } from "./commands/listPumps";
 import removePump from "./conversations/removePump";
+import { ignoreOld, onlyPublic } from "grammy-middlewares";
 
 dotenv.config();
 
@@ -26,6 +27,13 @@ const BOT_TOKEN =
 		? process.env.TELEGRAM_DEV_TOKEN
 		: process.env.TELEGRAM_TOKEN;
 export const bot = new Bot<MyContext>(BOT_TOKEN as string);
+bot.use(
+	ignoreOld(60),
+	onlyPublic((ctx) => {
+		ctx.reply("This bot is only available in public groups");
+	})
+);
+
 bot.use(session({ initial: () => ({}) }));
 bot.use(conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
