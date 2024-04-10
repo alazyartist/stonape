@@ -69,6 +69,7 @@ app.post("/", (req: Request, res: Response) => {
 				);
 				if (bonding_curve && IS_BUY) {
 					if (sol_spent > 3.0) {
+						console.log("whale");
 						bot.api.sendPhoto(
 							chatid,
 							"https://unsplash.com/photos/whales-tail-sticking-out-of-the-ocean-during-day-ZC2PWF4jTHc",
@@ -96,6 +97,7 @@ app.post("/", (req: Request, res: Response) => {
 							}
 						);
 					} else {
+						console.log("regular pump buy");
 						bot.api.sendPhoto(chatid, info.image, {
 							caption: `
 						🚨New <b>${info.name}</b> Buy 🚨
@@ -120,6 +122,7 @@ app.post("/", (req: Request, res: Response) => {
 				}
 			}
 			if (chatid && !IS_BUY && JEET_ALERT) {
+				console.log("jeet alert");
 				bot.api.sendPhoto(chatid, "https://i.imgflip.com/2uyw92.png", {
 					caption: `
 					🚨JEET ALERT🚨

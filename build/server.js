@@ -88,6 +88,7 @@ app.post("/", (req, res) => {
                 const bonding_curve = yield utils_js_1.calculateBondingCurve(mint_addr, from_addr, program_id);
                 if (bonding_curve && IS_BUY) {
                     if (sol_spent > 3.0) {
+                        console.log("whale");
                         bot_js_1.bot.api.sendPhoto(chatid, "https://unsplash.com/photos/whales-tail-sticking-out-of-the-ocean-during-day-ZC2PWF4jTHc", {
                             caption: `
 						🚨New <b>${info.name}</b> Buy 🚨
@@ -112,6 +113,7 @@ app.post("/", (req, res) => {
                         });
                     }
                     else {
+                        console.log("regular pump buy");
                         bot_js_1.bot.api.sendPhoto(chatid, info.image, {
                             caption: `
 						🚨New <b>${info.name}</b> Buy 🚨
@@ -136,6 +138,7 @@ app.post("/", (req, res) => {
                 }
             }
             if (chatid && !IS_BUY && JEET_ALERT) {
+                console.log("jeet alert");
                 bot_js_1.bot.api.sendPhoto(chatid, "https://i.imgflip.com/2uyw92.png", {
                     caption: `
 					🚨JEET ALERT🚨
