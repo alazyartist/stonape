@@ -86,7 +86,7 @@ app.post("/", (req, res) => {
                 const program_id = info === null || info === void 0 ? void 0 : info.program_id;
                 const bonding_curve = yield utils_js_1.calculateBondingCurve(mint_addr, from_addr, program_id);
                 if (bonding_curve && IS_BUY) {
-                    if (sol_spent > 0.3) {
+                    if (sol_spent > 3.0) {
                         bot_js_1.bot.api.sendPhoto(chatid, "https://unsplash.com/photos/whales-tail-sticking-out-of-the-ocean-during-day-ZC2PWF4jTHc", {
                             caption: `
 						🚨New <b>${info.name}</b> Buy 🚨

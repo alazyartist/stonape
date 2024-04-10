@@ -53,8 +53,8 @@ const BOT_TOKEN = process.env.MODE === "DEV"
 exports.bot = new grammy_1.Bot(BOT_TOKEN);
 // Use the plugin.
 exports.bot.api.config.use(auto_retry_1.autoRetry({
-    retries: 3,
-    delay: 1000,
+    maxRetryAttempts: 4,
+    maxDelaySeconds: 1000,
 }));
 exports.bot.use(grammy_middlewares_1.ignoreOld(60));
 exports.bot.command("check_wallet", (ctx) => __awaiter(void 0, void 0, void 0, function* () {

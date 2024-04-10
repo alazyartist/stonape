@@ -33,8 +33,8 @@ export const bot = new Bot<MyContext>(BOT_TOKEN as string);
 // Use the plugin.
 bot.api.config.use(
 	autoRetry({
-		retries: 3,
-		delay: 1000,
+		maxRetryAttempts: 4, // only repeat requests once
+		maxDelaySeconds: 1000,
 	})
 );
 bot.use(ignoreOld(60));
