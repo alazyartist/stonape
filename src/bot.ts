@@ -54,6 +54,9 @@ please try the command again, if the error persists,
 please contact the dev @alazyartist`
 	);
 });
+bot.command("list_pumps", async (ctx) => {
+	await listPumps(ctx);
+});
 bot.use((ctx, next) => isWhitelisted(ctx, next));
 bot.use(session({ initial: () => ({}) }));
 bot.use(conversations());
@@ -146,9 +149,6 @@ bot.command("top", async (ctx) => {
 });
 bot.command("about", async (ctx) => {
 	await ctx.conversation.enter("aboutToken");
-});
-bot.command("list_pumps", async (ctx) => {
-	await listPumps(ctx);
 });
 bot.command("chatid", async (ctx) => {
 	console.log(ctx.chat?.id);

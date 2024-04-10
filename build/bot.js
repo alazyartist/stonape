@@ -72,6 +72,9 @@ if you think this is an error,
 please try the command again, if the error persists,
 please contact the dev @alazyartist`);
 }));
+exports.bot.command("list_pumps", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield listPumps_1.listPumps(ctx);
+}));
 exports.bot.use((ctx, next) => whitelistMiddleware_1.default(ctx, next));
 exports.bot.use(grammy_1.session({ initial: () => ({}) }));
 exports.bot.use(conversations_1.conversations());
@@ -157,9 +160,6 @@ exports.bot.command("top", (ctx) => __awaiter(void 0, void 0, void 0, function* 
 }));
 exports.bot.command("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("aboutToken");
-}));
-exports.bot.command("list_pumps", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield listPumps_1.listPumps(ctx);
 }));
 exports.bot.command("chatid", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     var _c;

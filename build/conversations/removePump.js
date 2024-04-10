@@ -14,7 +14,7 @@ const helius_1 = require("../helius");
 const redis_1 = require("../redis");
 const utils_1 = require("../utils");
 function removePump(conversation, ctx) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f;
     return __awaiter(this, void 0, void 0, function* () {
         const telegram_user = (_a = ctx.from) === null || _a === void 0 ? void 0 : _a.id;
         const telegram_username = (_b = ctx.from) === null || _b === void 0 ? void 0 : _b.username;
@@ -45,7 +45,7 @@ function removePump(conversation, ctx) {
             }
             const { image, name, description, symbol } = info;
             const keyboard = new grammy_1.InlineKeyboard().text("Yes", "yes").text("No", "no");
-            const group_name = (_c = ctx.chat) === null || _c === void 0 ? void 0 : _c.title;
+            const group_name = (_f = (_d = (_c = ctx.chat) === null || _c === void 0 ? void 0 : _c.title) !== null && _d !== void 0 ? _d : (_e = ctx.from) === null || _e === void 0 ? void 0 : _e.username) !== null && _f !== void 0 ? _f : "Unknown";
             yield ctx.replyWithPhoto(image, {
                 caption: `You have provided the contract address: 
         <code>${contract_address}</code>
@@ -59,9 +59,9 @@ function removePump(conversation, ctx) {
                 parse_mode: "HTML",
             });
             yield conversation.waitForCallbackQuery(["yes", "no"]).then((ctx) => __awaiter(this, void 0, void 0, function* () {
-                var _d, _e;
-                if (((_d = ctx.callbackQuery) === null || _d === void 0 ? void 0 : _d.data) === "yes") {
-                    const chat_id = (_e = ctx.chat) === null || _e === void 0 ? void 0 : _e.id;
+                var _g, _h;
+                if (((_g = ctx.callbackQuery) === null || _g === void 0 ? void 0 : _g.data) === "yes") {
+                    const chat_id = (_h = ctx.chat) === null || _h === void 0 ? void 0 : _h.id;
                     yield redis_1.clearPumpData(contract_address);
                     const addressRemoved = yield conversation.external(() => helius_1.updateWebhookAddresses());
                     yield ctx.reply("Cleaning Up PumpBot...");
