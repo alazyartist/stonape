@@ -60,7 +60,7 @@ app.post("/", (req: Request, res: Response) => {
 			const userWallet = message.accountData[0].account;
 			const info = await getPumpTokenInfo(mint_addr);
 			const marketCap = await calculateMarketCap(sol_spent, token_amt);
-			if (chatid && IS_BUY && info.program_id) {
+			if (chatid && IS_BUY) {
 				const program_id = info?.program_id;
 				const bonding_curve = await calculateBondingCurve(
 					mint_addr,

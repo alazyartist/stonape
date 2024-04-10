@@ -83,7 +83,7 @@ app.post("/", (req, res) => {
             const userWallet = message.accountData[0].account;
             const info = yield helius_js_1.getPumpTokenInfo(mint_addr);
             const marketCap = yield utils_js_1.calculateMarketCap(sol_spent, token_amt);
-            if (chatid && IS_BUY && info.program_id) {
+            if (chatid && IS_BUY) {
                 const program_id = info === null || info === void 0 ? void 0 : info.program_id;
                 const bonding_curve = yield utils_js_1.calculateBondingCurve(mint_addr, from_addr, program_id);
                 if (bonding_curve && IS_BUY) {
