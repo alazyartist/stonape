@@ -35,11 +35,21 @@ export default async function removePump(
 			});
 		}
 
-		const info = await conversation.external(() => {
-			getPumpTokenInfo(contract_address);
-		});
+		const info: {
+			image: string;
+			name: string;
+			description: string;
+			symbol: string;
+		} = await conversation.external(() => getPumpTokenInfo(contract_address));
+		console.log(info);
+		if (!info) {
+			return await ctx.reply("Token Information not found. Please try again.", {
+				reply_markup: tryAgainKeyboard,
+			});
+		}
 		const { image, name, description, symbol } = info;
 		const keyboard = new InlineKeyboard().text("Yes", "yes").text("No", "no");
+		const group_name = ctx.chat?.title as string;
 		await ctx.replyWithPhoto(image, {
 			caption: `You have provided the contract address: 
         <code>${contract_address}</code>
@@ -47,7 +57,7 @@ export default async function removePump(
         Token Symbol: ${symbol}
         Token Description: ${description.slice(0, 40)}...
 
-		<b> You want to remove from ${ctx.chat}</b>
+		<b> You want to remove from ${group_name}</b>
         <b> Is this correct?</b>`,
 			reply_markup: keyboard,
 			parse_mode: "HTML",
@@ -60,13 +70,20 @@ export default async function removePump(
 				const addressRemoved = await conversation.external(() =>
 					updateWebhookAddresses()
 				);
+				await ctx.reply("Cleaning Up PumpBot...");
 				if (!addressRemoved) {
-					return await ctx.reply("Failed to remove address from webhook", {
-						reply_markup: tryAgainKeyboard,
-					});
+					await ctx.reply(
+						`Failed to remove address from webhook
+					
+					if this persists please notify @alazyartist
+					your group will no longer receive pump notifications.
+					`,
+						{
+							reply_markup: tryAgainKeyboard,
+						}
+					);
 				}
 
-				await ctx.reply("Cleaning Up PumpBot...");
 				await ctx.reply(
 					"PumpBot has been successfully stopped. You can start it again by using /setup_pump."
 				);

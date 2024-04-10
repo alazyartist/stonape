@@ -46,7 +46,8 @@ function getPumpTokenInfo(contract_address) {
     return __awaiter(this, void 0, void 0, function* () {
         const info = yield redis_1.getTokenInfo(contract_address);
         if (info) {
-            return JSON.parse(info);
+            console.log("info from redis", info);
+            return yield JSON.parse(info);
         }
         if (!info) {
             const response = yield fetch(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`, {

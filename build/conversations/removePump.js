@@ -14,7 +14,7 @@ const helius_1 = require("../helius");
 const redis_1 = require("../redis");
 const utils_1 = require("../utils");
 function removePump(conversation, ctx) {
-    var _a, _b;
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         const telegram_user = (_a = ctx.from) === null || _a === void 0 ? void 0 : _a.id;
         const telegram_username = (_b = ctx.from) === null || _b === void 0 ? void 0 : _b.username;
@@ -36,11 +36,16 @@ function removePump(conversation, ctx) {
                     reply_markup: tryAgainKeyboard,
                 });
             }
-            const info = yield conversation.external(() => {
-                helius_1.getPumpTokenInfo(contract_address);
-            });
+            const info = yield conversation.external(() => helius_1.getPumpTokenInfo(contract_address));
+            console.log(info);
+            if (!info) {
+                return yield ctx.reply("Token Information not found. Please try again.", {
+                    reply_markup: tryAgainKeyboard,
+                });
+            }
             const { image, name, description, symbol } = info;
             const keyboard = new grammy_1.InlineKeyboard().text("Yes", "yes").text("No", "no");
+            const group_name = (_c = ctx.chat) === null || _c === void 0 ? void 0 : _c.title;
             yield ctx.replyWithPhoto(image, {
                 caption: `You have provided the contract address: 
         <code>${contract_address}</code>
@@ -48,23 +53,27 @@ function removePump(conversation, ctx) {
         Token Symbol: ${symbol}
         Token Description: ${description.slice(0, 40)}...
 
-		<b> You want to remove from ${ctx.chat}</b>
+		<b> You want to remove from ${group_name}</b>
         <b> Is this correct?</b>`,
                 reply_markup: keyboard,
                 parse_mode: "HTML",
             });
             yield conversation.waitForCallbackQuery(["yes", "no"]).then((ctx) => __awaiter(this, void 0, void 0, function* () {
-                var _c, _d;
-                if (((_c = ctx.callbackQuery) === null || _c === void 0 ? void 0 : _c.data) === "yes") {
-                    const chat_id = (_d = ctx.chat) === null || _d === void 0 ? void 0 : _d.id;
+                var _d, _e;
+                if (((_d = ctx.callbackQuery) === null || _d === void 0 ? void 0 : _d.data) === "yes") {
+                    const chat_id = (_e = ctx.chat) === null || _e === void 0 ? void 0 : _e.id;
                     yield redis_1.clearPumpData(contract_address);
                     const addressRemoved = yield conversation.external(() => helius_1.updateWebhookAddresses());
+                    yield ctx.reply("Cleaning Up PumpBot...");
                     if (!addressRemoved) {
-                        return yield ctx.reply("Failed to remove address from webhook", {
+                        yield ctx.reply(`Failed to remove address from webhook
+					
+					if this persists please notify @alazyartist
+					your group will no longer receive pump notifications.
+					`, {
                             reply_markup: tryAgainKeyboard,
                         });
                     }
-                    yield ctx.reply("Cleaning Up PumpBot...");
                     yield ctx.reply("PumpBot has been successfully stopped. You can start it again by using /setup_pump.");
                     yield ctx.reply(`Please allow 2 to 3 minutes for the bot to stop pulling in Buys.
 					WE HOPE YOU ENJOYED IT!

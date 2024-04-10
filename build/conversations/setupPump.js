@@ -22,7 +22,6 @@ function setupPump(conversation, ctx) {
         const isAdmin = admins.some((admin) => admin.user.id === telegram_user);
         if (!isAdmin) {
             return yield ctx.reply("You are not an admin of this group.");
-            return;
         }
         if (isAdmin) {
             const tryAgainKeyboard = new grammy_1.InlineKeyboard().text("Try Again", "setup_pump");

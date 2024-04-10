@@ -14,7 +14,6 @@ export default async function setupPump(
 	const isAdmin = admins.some((admin) => admin.user.id === telegram_user);
 	if (!isAdmin) {
 		return await ctx.reply("You are not an admin of this group.");
-		return;
 	}
 	if (isAdmin) {
 		const tryAgainKeyboard = new InlineKeyboard().text(

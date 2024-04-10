@@ -1,9 +1,9 @@
 import { InlineKeyboard } from "grammy";
 import { MyContext } from "../bot";
-import { convertToK } from "../utils";
+import { convertToK, calculateBondingCurve } from "../utils";
 import { getActivePumps } from "../redis";
 import { getPumpTokenInfo } from "../helius";
-import { getChatId, getGroupName } from "../redis.js";
+import { getChatId, getGroupName,client } from "../redis.js";
 export async function listPumps(ctx: MyContext) {
 	const active_pumps = await getActivePumps();
 	if (!active_pumps || active_pumps.length === 0) {
@@ -13,6 +13,7 @@ export async function listPumps(ctx: MyContext) {
 
 	const keyboard = new InlineKeyboard();
 	const infoPromises = active_pumps.map((ca) => getPumpTokenInfo(ca));
+	const tokenAddrPromises = active_pumps.map(async (ca) => await client.hget(ca, "token_account"));
 	const chatIdPromises = active_pumps.map((ca) => getChatId(ca));
 	const groupNamePromises = active_pumps.map((ca) => getGroupName(ca));
 
@@ -20,20 +21,31 @@ export async function listPumps(ctx: MyContext) {
 		const infos = await Promise.all(infoPromises);
 		const chatIds = await Promise.all(chatIdPromises);
 		const groupNames = await Promise.all(groupNamePromises);
+		const message = await Promise.all(infos
+			.map(async (data, index) => {
+				const bonding_curve = await calculateBondingCurve(
+					active_pumps[index],
+					tokenAddrPromises[index],
+					infos[index].program_id
+				);
+				console.log(	active_pumps[index],
+					tokenAddrPromises[index],
+										infos[index].program_id)
+				const group_name = groupNames[index]
+				const percent = bonding_curve?.percent ?bonding_curve.percent :'idk Maybe';
+				const progress = bonding_curve?.progress ?bonding_curve?.progress:'🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜';
+				keyboard.url(data.name, `https://pump.fun/${active_pumps[index]}`).row();
+				return `
+				${index + 1}. ${data.name} 
+				${percent}- ${
+				progress} - ${data.description}`;
+			}))
+			
+		const joined_message =	message.join("\n";
 
-		const message = infos
-			.map((data, index) => {
-				const group_name = groupNames[index];
-				keyboard.url(data.name, `https://t.me/${group_name}`).row();
-				return `${index + 1}. ${data.name} - ${data.symbol} - ${
-					data.description
-				}`;
-			})
-			.join("\n");
-
-		ctx.reply(message, {
+		ctx.reply(joined_message, {
 			reply_markup: keyboard,
-		});
+		}))
 	} catch (error) {
 		console.error("Error fetching pump token info:", error);
 		ctx.reply("Error encountered while fetching active pumps.");

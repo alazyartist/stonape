@@ -5,7 +5,8 @@ import {
 	conversations,
 	createConversation,
 } from "@grammyjs/conversations";
-import { Bot, Context, session } from "grammy";
+import { Bot, Context, session, NextFunction, InputFile } from "grammy";
+import { autoRetry } from "@grammyjs/auto-retry";
 import { Menu } from "@grammyjs/menu";
 import { PublicKey } from "@solana/web3.js";
 
@@ -17,7 +18,8 @@ import setupPump from "./conversations/setupPump";
 import { listPumps } from "./commands/listPumps";
 import removePump from "./conversations/removePump";
 import { ignoreOld, onlyPublic } from "grammy-middlewares";
-
+import isWhitelisted from "./whitelistMiddleware";
+import checkWallet from "./walletCheck";
 dotenv.config();
 
 type MyContext = Context & ConversationFlavor;
@@ -27,18 +29,39 @@ const BOT_TOKEN =
 		? process.env.TELEGRAM_DEV_TOKEN
 		: process.env.TELEGRAM_TOKEN;
 export const bot = new Bot<MyContext>(BOT_TOKEN as string);
-bot.use(
-	ignoreOld(60),
-	onlyPublic((ctx) => {
-		ctx.reply("This bot is only available in public groups");
+
+// Use the plugin.
+bot.api.config.use(
+	autoRetry({
+		retries: 3,
+		delay: 1000,
 	})
 );
-
+bot.use(ignoreOld(60));
+bot.command("check_wallet", async (ctx) => {
+	const wallet = ctx.message?.text?.split(" ")[1];
+	if (!wallet) {
+		ctx.reply("Please enter a wallet address to check");
+		return;
+	}
+	const wallet_check = await checkWallet(ctx, wallet);
+	ctx.reply(
+		wallet_check
+			? "Wallet is whitelisted"
+			: `Wallet is not whitelisted 
+if you think this is an error, 
+please try the command again, if the error persists,
+please contact the dev @alazyartist`
+	);
+});
+bot.use((ctx, next) => isWhitelisted(ctx, next));
 bot.use(session({ initial: () => ({}) }));
 bot.use(conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
 bot.catch((err) => {
-	err.ctx.reply("An error occurred, please try again");
+	err.ctx.reply(
+		"An error occurred, please try again, if the error persists, contact the dev @alazyartist"
+	);
 	console.error(`Error for ${err.ctx.update.message}`, err);
 	bot.start();
 });
@@ -50,12 +73,13 @@ bot.use(createConversation(removePump));
 bot.api.setMyCommands([
 	{ command: "start", description: "Start the Bot" },
 	{ command: "list_pumps", description: "Get a List of Active Pumps" },
-	{ command: "about", description: "Get information about a token" },
+	// { command: "about", description: "Get information about a token" },
 	// { command: "ape", description: "Make Aping Easy AF" },
-	{ command: "top", description: "Get Top Pools on TON" },
-	{ command: "ca", description: "Setup a contract address" },
+	// { command: "top", description: "Get Top Pools on TON" },
+	// { command: "ca", description: "Setup a contract address" },
 	{ command: "setup_pump", description: "Setup a PumpFun BuyBot" },
 	{ command: "remove_pump", description: "Remove a PumpFun BuyBot" },
+	{ command: "check_wallet", description: "Checks Whitelist" },
 ]);
 const menu = new Menu<MyContext>("main-menu").text("watch.it.pump", (ctx) =>
 	ctx.conversation.enter("setupPump")
@@ -63,12 +87,10 @@ const menu = new Menu<MyContext>("main-menu").text("watch.it.pump", (ctx) =>
 bot.use(menu);
 
 bot.command("start", (ctx) =>
-	ctx.reply(
-		`Welcome ${ctx.from?.username}, You have successfully started watch.it.pump!`,
-		{
-			reply_markup: menu,
-		}
-	)
+	ctx.replyWithPhoto(new InputFile("./watchitpump.webp"), {
+		caption: `Welcome ${ctx.from?.username}, You have successfully started watch.it.pump!`,
+		reply_markup: menu,
+	})
 );
 bot.command("ca", async (ctx) => {
 	await ctx.conversation.enter("caSetup");

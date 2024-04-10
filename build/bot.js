@@ -35,6 +35,7 @@ exports.bot = void 0;
 const dotenv = __importStar(require("dotenv"));
 const conversations_1 = require("@grammyjs/conversations");
 const grammy_1 = require("grammy");
+const auto_retry_1 = require("@grammyjs/auto-retry");
 const menu_1 = require("@grammyjs/menu");
 const casetup_1 = require("./conversations/casetup");
 const about_1 = __importDefault(require("./commands/about"));
@@ -43,19 +44,40 @@ const setupPump_1 = __importDefault(require("./conversations/setupPump"));
 const listPumps_1 = require("./commands/listPumps");
 const removePump_1 = __importDefault(require("./conversations/removePump"));
 const grammy_middlewares_1 = require("grammy-middlewares");
+const whitelistMiddleware_1 = __importDefault(require("./whitelistMiddleware"));
+const walletCheck_1 = __importDefault(require("./walletCheck"));
 dotenv.config();
 const BOT_TOKEN = process.env.MODE === "DEV"
     ? process.env.TELEGRAM_DEV_TOKEN
     : process.env.TELEGRAM_TOKEN;
 exports.bot = new grammy_1.Bot(BOT_TOKEN);
-exports.bot.use(grammy_middlewares_1.ignoreOld(60), grammy_middlewares_1.onlyPublic((ctx) => {
-    ctx.reply("This bot is only available in public groups");
+// Use the plugin.
+exports.bot.api.config.use(auto_retry_1.autoRetry({
+    retries: 3,
+    delay: 1000,
 }));
+exports.bot.use(grammy_middlewares_1.ignoreOld(60));
+exports.bot.command("check_wallet", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const wallet = (_b = (_a = ctx.message) === null || _a === void 0 ? void 0 : _a.text) === null || _b === void 0 ? void 0 : _b.split(" ")[1];
+    if (!wallet) {
+        ctx.reply("Please enter a wallet address to check");
+        return;
+    }
+    const wallet_check = yield walletCheck_1.default(ctx, wallet);
+    ctx.reply(wallet_check
+        ? "Wallet is whitelisted"
+        : `Wallet is not whitelisted 
+if you think this is an error, 
+please try the command again, if the error persists,
+please contact the dev @alazyartist`);
+}));
+exports.bot.use((ctx, next) => whitelistMiddleware_1.default(ctx, next));
 exports.bot.use(grammy_1.session({ initial: () => ({}) }));
 exports.bot.use(conversations_1.conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
 exports.bot.catch((err) => {
-    err.ctx.reply("An error occurred, please try again");
+    err.ctx.reply("An error occurred, please try again, if the error persists, contact the dev @alazyartist");
     console.error(`Error for ${err.ctx.update.message}`, err);
     exports.bot.start();
 });
@@ -66,18 +88,20 @@ exports.bot.use(conversations_1.createConversation(removePump_1.default));
 exports.bot.api.setMyCommands([
     { command: "start", description: "Start the Bot" },
     { command: "list_pumps", description: "Get a List of Active Pumps" },
-    { command: "about", description: "Get information about a token" },
+    // { command: "about", description: "Get information about a token" },
     // { command: "ape", description: "Make Aping Easy AF" },
-    { command: "top", description: "Get Top Pools on TON" },
-    { command: "ca", description: "Setup a contract address" },
+    // { command: "top", description: "Get Top Pools on TON" },
+    // { command: "ca", description: "Setup a contract address" },
     { command: "setup_pump", description: "Setup a PumpFun BuyBot" },
     { command: "remove_pump", description: "Remove a PumpFun BuyBot" },
+    { command: "check_wallet", description: "Checks Whitelist" },
 ]);
 const menu = new menu_1.Menu("main-menu").text("watch.it.pump", (ctx) => ctx.conversation.enter("setupPump"));
 exports.bot.use(menu);
 exports.bot.command("start", (ctx) => {
     var _a;
-    return ctx.reply(`Welcome ${(_a = ctx.from) === null || _a === void 0 ? void 0 : _a.username}, You have successfully started watch.it.pump!`, {
+    return ctx.replyWithPhoto(new grammy_1.InputFile("./watchitpump.webp"), {
+        caption: `Welcome ${(_a = ctx.from) === null || _a === void 0 ? void 0 : _a.username}, You have successfully started watch.it.pump!`,
         reply_markup: menu,
     });
 });
@@ -138,8 +162,8 @@ exports.bot.command("list_pumps", (ctx) => __awaiter(void 0, void 0, void 0, fun
     yield listPumps_1.listPumps(ctx);
 }));
 exports.bot.command("chatid", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    console.log((_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id);
+    var _c;
+    console.log((_c = ctx.chat) === null || _c === void 0 ? void 0 : _c.id);
 }));
 exports.bot.command("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("setupPump");

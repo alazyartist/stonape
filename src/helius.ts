@@ -17,7 +17,8 @@ const HELIUS_KEY =
 async function getPumpTokenInfo(contract_address: string) {
 	const info = await getTokenInfo(contract_address);
 	if (info) {
-		return JSON.parse(info);
+		console.log("info from redis", info);
+		return await JSON.parse(info);
 	}
 	if (!info) {
 		const response = await fetch(

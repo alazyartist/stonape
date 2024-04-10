@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.listPumps = void 0;
 const grammy_1 = require("grammy");
+const utils_1 = require("../utils");
 const redis_1 = require("../redis");
 const helius_1 = require("../helius");
 const redis_js_1 = require("../redis.js");
@@ -23,20 +24,27 @@ function listPumps(ctx) {
         }
         const keyboard = new grammy_1.InlineKeyboard();
         const infoPromises = active_pumps.map((ca) => helius_1.getPumpTokenInfo(ca));
+        const tokenAddrPromises = active_pumps.map((ca) => __awaiter(this, void 0, void 0, function* () { return yield redis_js_1.client.hget(ca, "token_account"); }));
         const chatIdPromises = active_pumps.map((ca) => redis_js_1.getChatId(ca));
         const groupNamePromises = active_pumps.map((ca) => redis_js_1.getGroupName(ca));
         try {
             const infos = yield Promise.all(infoPromises);
             const chatIds = yield Promise.all(chatIdPromises);
             const groupNames = yield Promise.all(groupNamePromises);
-            const message = infos
-                .map((data, index) => {
+            const message = yield Promise.all(infos
+                .map((data, index) => __awaiter(this, void 0, void 0, function* () {
+                const bonding_curve = yield utils_1.calculateBondingCurve(active_pumps[index], tokenAddrPromises[index], infos[index].program_id);
+                console.log(active_pumps[index], tokenAddrPromises[index], infos[index].program_id);
                 const group_name = groupNames[index];
-                keyboard.url(data.name, `https://t.me/${group_name}`).row();
-                return `${index + 1}. ${data.name} - ${data.symbol} - ${data.description}`;
-            })
-                .join("\n");
-            ctx.reply(message, {
+                const percent = (bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.percent) ? bonding_curve.percent : 'idk Maybe';
+                const progress = (bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.progress) ? bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.progress : '🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜';
+                keyboard.url(data.name, `https://pump.fun/${active_pumps[index]}`).row();
+                return `
+				${index + 1}. ${data.name} 
+				${percent}- ${progress} - ${data.description}`;
+            })));
+            const joined_message = message.join("\n");
+            ctx.reply(joined_message, {
                 reply_markup: keyboard,
             });
         }
