@@ -53,40 +53,38 @@ function calculateMarketCap(solTraded, tokensReceived) {
     });
 }
 exports.calculateMarketCap = calculateMarketCap;
-const connection = new web3_js_1.Connection(web3_js_1.clusterApiUrl("mainnet-beta"));
 function calculateBondingCurve(address, owner_addr, program_id) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token_addr = new web3_js_1.PublicKey(address);
             const owner = new web3_js_1.PublicKey(owner_addr);
-            // const PROGRAM_ID = new PublicKey(program_id);
-            // const token_address_key = token_addr.toBase58();
-            const token_addr_cache = yield redis_1.client.hget(address, 'token_info', (err, data) => {
+            const PROGRAM_ID = new web3_js_1.PublicKey(program_id);
+            const token_address_key = token_addr.toBase58();
+            const token_addr_cache = redis_1.client.get(token_address_key, (err, data) => {
                 if (err)
                     console.error(err);
                 else {
-                    console.log("TOKEN_INFO from redis", address, data);
+                    console.log("TOKEN_INFO from redis", token_address_key, data);
                     return data;
                 }
+                ;
             });
-            if (!token_addr_cache) {
-                let token_account = yield connection.getParsedTokenAccountsByOwner(owner, {
-                    mint: token_addr,
-                });
-                const token_account_addr = token_account.value[0].pubkey;
-                yield redis_1.client.hset(address, 'token_info', token_account_addr.toBase58());
-                console.log("tokenaccount", token_account.value[0].pubkey);
-                const token_supply = yield connection.getTokenAccountBalance(token_account_addr);
-                console.log("token_supply", token_supply);
-                const total_supply = token_supply.value.uiAmount;
-                console.log(total_supply);
-                const bonding_percent = (1 - (total_supply - 204000000) / 800000000) * 100;
-                console.log(bonding_percent);
-                return {
-                    bonding_percent,
-                    progress_bar: generateBondingCurveProgress(bonding_percent),
-                };
-            }
+            const connection = new web3_js_1.Connection(web3_js_1.clusterApiUrl("mainnet-beta"));
+            let token_account = yield connection.getParsedTokenAccountsByOwner(owner, {
+                mint: token_addr,
+            });
+            const token_account_addr = token_account.value[0].pubkey;
+            console.log("tokenaccount", token_account.value[0].pubkey);
+            const token_supply = yield connection.getTokenAccountBalance(token_account_addr);
+            console.log("token_supply", token_supply);
+            const total_supply = token_supply.value.uiAmount;
+            console.log(total_supply);
+            const bonding_percent = (1 - (total_supply - 204000000) / 800000000) * 100;
+            console.log(bonding_percent);
+            return {
+                bonding_percent,
+                progress_bar: generateBondingCurveProgress(bonding_percent),
+            };
         }
         catch (err) {
             console.log(err);
@@ -153,9 +151,7 @@ function getChatAdministrators(chatId) {
             return admins;
         }
         catch (error) {
-            if (error.error_code === 400 &&
-                error.parameters &&
-                error.parameters.migrate_to_chat_id) {
+            if (error.error_code === 400 && error.parameters && error.parameters.migrate_to_chat_id) {
                 // Group was upgraded to supergroup, use the new chat ID
                 const newChatId = error.parameters.migrate_to_chat_id;
                 // Update the stored chat ID in your system here

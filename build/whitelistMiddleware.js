@@ -39,7 +39,7 @@ to the following address to gain access:
 If you have sent it but are still not whitelisted,
 please contact the dev @alazyartist
 
-run command /check_wallet@ston_ape_bot your_contract_address
+run command /check_wallet@ston_ape_bot wallet_you_paid_with
 to check if you are whitelisted and update the whitelist with your telegram id
         `, {
                 parse_mode: "HTML",

@@ -74,8 +74,7 @@ function getTokenInfo(contract_address) {
         const data = yield client.hget(contract_address, "token_info", (err, data) => {
             if (err)
                 console.error(err);
-            else
-                console.log("TOKEN_INFO from redis", contract_address, data);
+            // else console.log("TOKEN_INFO from redis", contract_address, data);
         });
         return data;
     });

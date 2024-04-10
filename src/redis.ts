@@ -51,7 +51,7 @@ async function getTokenInfo(contract_address: string) {
 		"token_info",
 		(err, data) => {
 			if (err) console.error(err);
-			else console.log("TOKEN_INFO from redis", contract_address, data);
+			// else console.log("TOKEN_INFO from redis", contract_address, data);
 		}
 	);
 	return data;
