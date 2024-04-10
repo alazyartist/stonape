@@ -34,8 +34,9 @@ app.post("/", (req: Request, res: Response) => {
 
 			const fee_payer = message.feePayer;
 			const IS_BUY = from_addr !== fee_payer;
-			if (message.mint_addr === "So11111111111111111111111111111111111111112")
+			if (message.mint_addr === "So11111111111111111111111111111111111111112") {
 				return;
+			}
 			// if (from_addr === fee_payer) return;
 			const mint_addr = message.tokenTransfers[0].mint;
 			const token_amt = message.tokenTransfers[0].tokenAmount;
