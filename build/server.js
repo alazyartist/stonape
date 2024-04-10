@@ -76,13 +76,13 @@ app.post("/", (req, res) => {
             const sol_spent = Math.abs(parseInt((_b = message.accountData) === null || _b === void 0 ? void 0 : _b[0].nativeBalanceChange) / 1000000000);
             const JEET_ALERT = sol_spent > 1.0;
             const chatid = yield redis_js_1.getChatId(mint_addr);
-            const userWallet = message.accountData[0].account;
-            const info = yield helius_js_1.getPumpTokenInfo(mint_addr);
-            const marketCap = yield utils_js_1.calculateMarketCap(sol_spent, token_amt);
             if (!chatid) {
                 console.log("No chat id found for", mint_addr);
                 return;
             }
+            const userWallet = message.accountData[0].account;
+            const info = yield helius_js_1.getPumpTokenInfo(mint_addr);
+            const marketCap = yield utils_js_1.calculateMarketCap(sol_spent, token_amt);
             if (chatid && IS_BUY && info.program_id) {
                 const program_id = info === null || info === void 0 ? void 0 : info.program_id;
                 const bonding_curve = yield utils_js_1.calculateBondingCurve(mint_addr, from_addr, program_id);

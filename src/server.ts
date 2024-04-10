@@ -53,13 +53,13 @@ app.post("/", (req: Request, res: Response) => {
 
 			const JEET_ALERT = sol_spent > 1.0;
 			const chatid = await getChatId(mint_addr);
-			const userWallet = message.accountData[0].account;
-			const info = await getPumpTokenInfo(mint_addr);
-			const marketCap = await calculateMarketCap(sol_spent, token_amt);
 			if (!chatid) {
 				console.log("No chat id found for", mint_addr);
 				return;
 			}
+			const userWallet = message.accountData[0].account;
+			const info = await getPumpTokenInfo(mint_addr);
+			const marketCap = await calculateMarketCap(sol_spent, token_amt);
 			if (chatid && IS_BUY && info.program_id) {
 				const program_id = info?.program_id;
 				const bonding_curve = await calculateBondingCurve(
