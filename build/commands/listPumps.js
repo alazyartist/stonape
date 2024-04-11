@@ -24,7 +24,24 @@ function listPumps(ctx) {
         }
         const keyboard = new grammy_1.InlineKeyboard();
         const infoPromises = active_pumps.map((ca) => helius_1.getPumpTokenInfo(ca));
-        const tokenAddrPromises = active_pumps.map((ca) => __awaiter(this, void 0, void 0, function* () { return yield redis_js_1.client.hget(ca, "token_account"); }));
+        const tokenAddrPromises = active_pumps.map((ca) => __awaiter(this, void 0, void 0, function* () {
+            const token_addr = yield redis_js_1.client.hget(ca, "token_account");
+            if (token_addr)
+                return token_addr;
+            // if(token_addr === null){
+            // 	const connection = new Connection(clusterApiUrl("mainnet-beta"));
+            // 	let token_account = await connection.getParsedTokenAccountsByOwner(owner, {
+            // 		mint: ca,
+            // 	}); 
+            // 	const token_account_addr = token_account.value[0].pubkey;
+            // 	await client.hset(
+            // 		ca,
+            // 		"token_account",
+            // 		token_account_addr.toBase58()
+            // 	);
+            // 	return token_account_addr.toBase58();
+            // }
+        }));
         const chatIdPromises = active_pumps.map((ca) => redis_js_1.getChatId(ca));
         const groupNamePromises = active_pumps.map((ca) => redis_js_1.getGroupName(ca));
         try {
@@ -40,8 +57,9 @@ function listPumps(ctx) {
                 const progress = (bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.progress) ? bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.progress : '🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜';
                 keyboard.url(data.name, `https://pump.fun/${active_pumps[index]}`).row();
                 return `
-				${index + 1}. ${data.name} 
-				${percent}- ${progress} - ${data.description}`;
+${index + 1}. ${data.name} 
+${percent}- 
+${progress} - ${data.description.slice(0, 100)}...`;
             })));
             const joined_message = message.join("\n");
             ctx.reply(joined_message, {

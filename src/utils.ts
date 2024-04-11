@@ -1,5 +1,6 @@
 import { PublicKey, Connection, clusterApiUrl } from "@solana/web3.js";
-import { storeSolanaPrice, getSolanaPrice,client } from "./redis";
+import { storeSolanaPrice, getSolanaPrice, client } from "./redis";
+import { GrammyError } from "grammy";
 import { bot } from "./bot";
 function convertToK(value: string) {
 	if (parseFloat(value) < 1000) return value;
@@ -39,26 +40,47 @@ async function calculateMarketCap(solTraded: number, tokensReceived: number) {
 }
 
 async function calculateBondingCurve(
-	address: PublicKey,
-	owner_addr: PublicKey,
-	program_id: PublicKey
+	address: string,
+	owner_addr: string,
+	program_id: string
 ) {
 	try {
+		if (
+			!isSolanaAddress(address) ||
+			!isSolanaAddress(owner_addr) ||
+			!isSolanaAddress(program_id)
+		) {
+			return {
+				bonding_percent: "math is hard",
+				progress_bar: "🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜",
+			};
+		}
 		const token_addr = new PublicKey(address);
 		const owner = new PublicKey(owner_addr);
 		const PROGRAM_ID = new PublicKey(program_id);
-		const token_address_key=token_addr.toBase58();
-		const token_addr_cache = client.get(token_address_key, (err, data) => {
-			if (err) console.error(err);
-			else {console.log("TOKEN_INFO from redis", token_address_key, data)
-				return data
-			};)
+		const token_address_key = token_addr.toBase58();
+		const token_addr_cache = client.hget(
+			token_address_key,
+			"token_account",
+			(err, data) => {
+				if (err) console.error(err);
+				else {
+					console.log("TOKEN_INFO from redis", token_address_key, data);
+					return data;
+				}
+			}
+		);
 
 		const connection = new Connection(clusterApiUrl("mainnet-beta"));
 		let token_account = await connection.getParsedTokenAccountsByOwner(owner, {
 			mint: token_addr,
 		});
 		const token_account_addr = token_account.value[0].pubkey;
+		await client.hset(
+			token_address_key,
+			"token_account",
+			token_account_addr.toBase58()
+		);
 		console.log("tokenaccount", token_account.value[0].pubkey);
 		const token_supply = await connection.getTokenAccountBalance(
 			token_account_addr
@@ -119,21 +141,25 @@ function generateBondingCurveProgress(percent: number) {
 }
 
 async function getChatAdministrators(chatId) {
-    try {
-        const admins = await bot.api.getChatAdministrators(chatId);
-        return admins;
-    } catch (error:GrammyError) {
-        if (error.error_code === 400 && error.parameters && error.parameters.migrate_to_chat_id) {
-            // Group was upgraded to supergroup, use the new chat ID
-            const newChatId = error.parameters.migrate_to_chat_id;
-            // Update the stored chat ID in your system here
-            // ...
-            return await bot.api.getChatAdministrators(newChatId);
-        } else {
-            // Handle other errors or rethrow them
-            throw error;
-        }
-    }
+	try {
+		const admins = await bot.api.getChatAdministrators(chatId);
+		return admins;
+	} catch (error: GrammyError) {
+		if (
+			error.error_code === 400 &&
+			error.parameters &&
+			error.parameters.migrate_to_chat_id
+		) {
+			// Group was upgraded to supergroup, use the new chat ID
+			const newChatId = error.parameters.migrate_to_chat_id;
+			// Update the stored chat ID in your system here
+			// ...
+			return await bot.api.getChatAdministrators(newChatId);
+		} else {
+			// Handle other errors or rethrow them
+			throw error;
+		}
+	}
 }
 
 export {

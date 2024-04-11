@@ -82,13 +82,19 @@ app.post("/", (req, res) => {
                 console.log("bcinfo", mint_addr, from_addr, program_id);
                 const bonding_curve = yield utils_js_1.calculateBondingCurve(mint_addr, from_addr, program_id);
                 if (IS_BUY) {
-                    if (sol_spent > 0.3) {
+                    let bc_percent = "idk maybe";
+                    let bc_display = "🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜";
+                    if (bonding_curve !== undefined) {
+                        bc_percent = bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.bonding_percent.toFixed(2);
+                        bc_display = bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.progress_bar;
+                    }
+                    if (sol_spent > 3.0) {
                         console.log("whale alert");
                         bot_js_1.bot.api.sendPhoto(chatid, "https://unsplash.com/photos/whales-tail-sticking-out-of-the-ocean-during-day-ZC2PWF4jTHc", {
                             caption: `
-						🚨New <b>${info.name}</b> Buy 🚨
+					🚨New <b>${info.name}</b> Buy 🚨
 						THROUGH pump.fun
-	<b>🐳 WHALE ALERT 🐳</b>
+<b>🐳 WHALE ALERT 🐳</b>
 
 			<blockquote>${info.description.slice(0, 60)}...</blockquote>
 			💸|SPENT <b>${sol_spent}</b>
@@ -97,8 +103,8 @@ app.post("/", (req, res) => {
 			📊| Market Cap ${marketCap}
 					
 				    		🚀 a winning choice 🚀        
-							Bonding Curve Filled ${bonding_curve.bonding_percent.toFixed(2)}%
-							${bonding_curve.progress_bar}
+							Bonding Curve Filled ${bc_percent}%
+							${bc_display}
 				<a href='https://pump.fun/${mint_addr}'>BUY on pump.fun</a>
 
 				<code>${mint_addr}</code>

@@ -49,7 +49,10 @@ export default async function removePump(
 		}
 		const { image, name, description, symbol } = info;
 		const keyboard = new InlineKeyboard().text("Yes", "yes").text("No", "no");
-		const group_name = ctx.chat?.title ?? ctx.from?.username ?? "Unknown";
+		let group_name = ctx.from.username;
+		if (ctx.chat.type === "group") {
+			group_name = ctx.chat.title;
+		}
 		await ctx.replyWithPhoto(image, {
 			caption: `You have provided the contract address: 
         <code>${contract_address}</code>

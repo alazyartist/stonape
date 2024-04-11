@@ -4,7 +4,7 @@ export default async function isWhitelisted(
 	ctx: Context,
 	next: NextFunction // is an alias for: () => Promise<void>
 ): Promise<void> {
-	console.log(ctx);
+	console.log(ctx.update.message.chat);
 	// await ctx.reply(`Checking if ${ctx.from.username} is whitelisted`);
 	const newMembers = ctx.update?.message?.new_chat_members;
 	const leftMember = ctx.update?.message?.left_chat_member;

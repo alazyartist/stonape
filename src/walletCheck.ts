@@ -3,10 +3,7 @@ import { MyContext } from "./bot";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { client } from "./redis";
 dotenv.config();
-async function checkWallet(
-	ctx: MyContext,
-	wallet_to_check: string
-): Promise<boolean> {
+async function checkWallet(ctx: MyContext, wallet_to_check: string) {
 	const user_chat_id = ctx.from?.id as number;
 	ctx.reply("Checking wallet, please wait...");
 
