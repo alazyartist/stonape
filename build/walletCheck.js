@@ -37,6 +37,7 @@ function checkWallet(ctx, wallet_to_check) {
     return __awaiter(this, void 0, void 0, function* () {
         const user_chat_id = (_a = ctx.from) === null || _a === void 0 ? void 0 : _a.id;
         ctx.reply("Checking wallet, please wait...");
+        yield ctx.replyWithChatAction("typing");
         try {
             const data = yield fetch(`https://api.helius.xyz/v0/addresses/WATcHGu7tvKrwp8SzNyp4Z2mB4sSEC8w6AyAwfh28A5/transactions?api-key=${process.env.HELIUS_KEY}&type=TRANSFER`, {
                 method: "GET",

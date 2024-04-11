@@ -53,8 +53,8 @@ function listPumps(ctx) {
                 const bonding_curve = yield utils_1.calculateBondingCurve(active_pumps[index], tokenAddrPromises[index], infos[index].program_id);
                 console.log(active_pumps[index], tokenAddrPromises[index], infos[index].program_id);
                 const group_name = groupNames[index];
-                const percent = (bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.percent) ? bonding_curve.percent : 'idk Maybe';
-                const progress = (bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.progress) ? bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.progress : '🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜';
+                const percent = (bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.bonding_percent_) ? bonding_curve.bonding_percent : 'idk Maybe';
+                const progress = (bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.bonding_progress) ? bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.bonding_progress : '🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜';
                 keyboard.url(data.name, `https://pump.fun/${active_pumps[index]}`).row();
                 return `
 ${index + 1}. ${data.name} 

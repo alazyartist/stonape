@@ -6,6 +6,7 @@ dotenv.config();
 async function checkWallet(ctx: MyContext, wallet_to_check: string) {
 	const user_chat_id = ctx.from?.id as number;
 	ctx.reply("Checking wallet, please wait...");
+	await ctx.replyWithChatAction("typing");
 
 	try {
 		const data = await fetch(

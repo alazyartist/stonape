@@ -61,7 +61,7 @@ exports.bot.command("check_wallet", (ctx) => __awaiter(void 0, void 0, void 0, f
     var _a, _b;
     const wallet = (_b = (_a = ctx.message) === null || _a === void 0 ? void 0 : _a.text) === null || _b === void 0 ? void 0 : _b.split(" ")[1];
     if (!wallet) {
-        ctx.reply("Please enter a wallet address to check");
+        ctx.reply("please enter '/check_wallet [wallet_addr]' to check wallet");
         return;
     }
     const wallet_check = yield walletCheck_1.default(ctx, wallet);
@@ -101,6 +101,7 @@ exports.bot.api.setMyCommands([
     { command: "setup_pump", description: "Setup a PumpFun BuyBot" },
     { command: "remove_pump", description: "Remove a PumpFun BuyBot" },
     { command: "check_wallet", description: "Checks Whitelist" },
+    { command: "all", description: "List all commands" },
 ]);
 const menu = new menu_1.Menu("main-menu").text("watch.it.pump", (ctx) => ctx.conversation.enter("setupPump"));
 exports.bot.use(menu);
@@ -111,10 +112,22 @@ exports.bot.command("start", (ctx) => {
         reply_markup: menu,
     });
 });
+exports.bot.command("/tip_bot_dev", (ctx) => ctx.replyWithPhoto(new grammy_1.InputFile("./watchitpump.webp"), {
+    caption: `That's so thoughtful of you, 😍😍
+		You can tip the dev at the following addresses:
+		<code>WATcHGu7tvKrwp8SzNyp4Z2mB4sSEC8w6AyAwfh28A5</code>
+		`,
+    reply_markup: menu,
+}));
 exports.bot.command("ca", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("caSetup");
 }));
-// bot.command("test", async (ctx) => {
+exports.bot.command("test", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield ctx.replyWithChatAction("typing");
+    setTimeout(() => {
+        ctx.reply("Random Test Comlpeted after delay");
+    }, 1200);
+}));
 // 	// 	try {
 // 	// 		const connection = new Connection(clusterApiUrl("mainnet-beta"));
 // 	// 		// "DtFjJtZs1N1Mi1SR5aUyfigAT1ssLEUHeruZPF3QNy6F"

@@ -14,18 +14,23 @@ const helius_1 = require("../helius");
 const redis_1 = require("../redis");
 const utils_1 = require("../utils");
 function setupPump(conversation, ctx) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
-        const telegram_user = (_a = ctx.from) === null || _a === void 0 ? void 0 : _a.id;
-        const telegram_username = (_b = ctx.from) === null || _b === void 0 ? void 0 : _b.username;
-        const admins = yield utils_1.getChatAdministrators((_c = ctx.chat) === null || _c === void 0 ? void 0 : _c.id);
+        if (((_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.type) === "private") {
+            return yield ctx.reply("You need to add the bot to a group to setup watch.it.pump, once added to a group, type /start@ston_ape_bot. If this is a SuperGroup or Channel, please give the bot admin rights.", {
+                reply_markup: new grammy_1.InlineKeyboard().url("Add Bot To Group", "https://t.me/ston_ape_test_bot?startgroup=true"),
+            });
+        }
+        const telegram_user = (_b = ctx.from) === null || _b === void 0 ? void 0 : _b.id;
+        const telegram_username = (_c = ctx.from) === null || _c === void 0 ? void 0 : _c.username;
+        const admins = yield utils_1.getChatAdministrators((_d = ctx.chat) === null || _d === void 0 ? void 0 : _d.id);
         const isAdmin = admins.some((admin) => admin.user.id === telegram_user);
         if (!isAdmin) {
             return yield ctx.reply("You are not an admin of this group.");
         }
         if (isAdmin) {
             const tryAgainKeyboard = new grammy_1.InlineKeyboard().text("Try Again", "setup_pump");
-            yield ctx.reply(`@${telegram_username} To Setup PumpBot, you need to provide the contract address of the token. If you are adding this bot to a group.`, {
+            yield ctx.reply(`@${telegram_username} To Setup PumpBot, you need to provide the contract address of the token.`, {
                 reply_markup: { force_reply: true, selective: true },
             });
             const { message } = yield conversation.wait();
@@ -50,10 +55,10 @@ function setupPump(conversation, ctx) {
                 parse_mode: "HTML",
             });
             yield conversation.waitForCallbackQuery(["yes", "no"]).then((ctx) => __awaiter(this, void 0, void 0, function* () {
-                var _d, _e, _f;
-                if (((_d = ctx.callbackQuery) === null || _d === void 0 ? void 0 : _d.data) === "yes") {
-                    const chat_id = (_e = ctx.chat) === null || _e === void 0 ? void 0 : _e.id;
-                    const group_name = (_f = ctx.chat) === null || _f === void 0 ? void 0 : _f.id.toString();
+                var _e, _f, _g;
+                if (((_e = ctx.callbackQuery) === null || _e === void 0 ? void 0 : _e.data) === "yes") {
+                    const chat_id = (_f = ctx.chat) === null || _f === void 0 ? void 0 : _f.id;
+                    const group_name = (_g = ctx.chat) === null || _g === void 0 ? void 0 : _g.id.toString();
                     yield redis_1.storePumpData(contract_address, chat_id, group_name);
                     const addressAdded = yield conversation.external(() => helius_1.updateWebhookAddresses());
                     if (!addressAdded) {

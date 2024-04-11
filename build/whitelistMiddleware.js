@@ -14,10 +14,12 @@ function isWhitelisted(ctx, next // is an alias for: () => Promise<void>
 ) {
     var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(ctx.update.message.chat);
+        // console.log(ctx.update.message.chat);
         // await ctx.reply(`Checking if ${ctx.from.username} is whitelisted`);
         const newMembers = (_b = (_a = ctx.update) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.new_chat_members;
         const leftMember = (_d = (_c = ctx.update) === null || _c === void 0 ? void 0 : _c.message) === null || _d === void 0 ? void 0 : _d.left_chat_member;
+        if (!ctx.chat)
+            return;
         if (newMembers) {
             console.log(newMembers);
             newMembers.forEach((member) => __awaiter(this, void 0, void 0, function* () {

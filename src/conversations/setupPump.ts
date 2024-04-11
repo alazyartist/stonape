@@ -8,6 +8,17 @@ export default async function setupPump(
 	conversation: MyConversation,
 	ctx: MyContext
 ) {
+	if (ctx.chat?.type === "private") {
+		return await ctx.reply(
+			"You need to add the bot to a group to setup watch.it.pump, once added to a group, type /start@ston_ape_bot. If this is a SuperGroup or Channel, please give the bot admin rights.",
+			{
+				reply_markup: new InlineKeyboard().url(
+					"Add Bot To Group",
+					"https://t.me/ston_ape_test_bot?startgroup=true"
+				),
+			}
+		);
+	}
 	const telegram_user = ctx.from?.id;
 	const telegram_username = ctx.from?.username;
 	const admins = await getChatAdministrators(ctx.chat?.id as number);
@@ -21,7 +32,7 @@ export default async function setupPump(
 			"setup_pump"
 		);
 		await ctx.reply(
-			`@${telegram_username} To Setup PumpBot, you need to provide the contract address of the token. If you are adding this bot to a group.`,
+			`@${telegram_username} To Setup PumpBot, you need to provide the contract address of the token.`,
 			{
 				reply_markup: { force_reply: true, selective: true },
 			}
