@@ -112,7 +112,7 @@ exports.bot.command("start", (ctx) => {
         reply_markup: menu,
     });
 });
-exports.bot.command("/tip_bot_dev", (ctx) => ctx.replyWithPhoto(new grammy_1.InputFile("./watchitpump.webp"), {
+exports.bot.command("tip_bot_dev", (ctx) => ctx.replyWithPhoto(new grammy_1.InputFile("./watchitpump.webp"), {
     caption: `That's so thoughtful of you, 😍😍
 		You can tip the dev at the following addresses:
 		<code>WATcHGu7tvKrwp8SzNyp4Z2mB4sSEC8w6AyAwfh28A5</code>
