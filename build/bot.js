@@ -65,12 +65,15 @@ exports.bot.command("check_wallet", (ctx) => __awaiter(void 0, void 0, void 0, f
         return;
     }
     const wallet_check = yield walletCheck_1.default(ctx, wallet);
-    ctx.reply(wallet_check
-        ? "Wallet is whitelisted"
-        : `Wallet is not whitelisted 
+    Promise.resolve(wallet_check).then((value) => {
+        console.log("walletCheck bot value", value);
+        value
+            ? ctx.reply("Wallet is on the whitelist")
+            : ctx.reply(`Wallet is not whitelisted 
 if you think this is an error, 
 please try the command again, if the error persists,
 please contact the dev @alazyartist`);
+    });
 }));
 exports.bot.command("list_pumps", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield listPumps_1.listPumps(ctx);

@@ -4,10 +4,31 @@ export default async function isWhitelisted(
 	ctx: Context,
 	next: NextFunction // is an alias for: () => Promise<void>
 ): Promise<void> {
+	console.log(ctx);
 	// await ctx.reply(`Checking if ${ctx.from.username} is whitelisted`);
-	if (!ctx.from) return;
-	if (!ctx?.from?.id) {
+	const newMembers = ctx.update?.message?.new_chat_members;
+	const leftMember = ctx.update?.message?.left_chat_member;
+
+	if (newMembers) {
+		console.log(newMembers);
+		newMembers.forEach(async (member) => {
+			if (member.username) {
+				await ctx.reply(`Welcome to ${ctx.chat.title}, ${member.username}.`);
+			}
+		});
+		return; // Stop processing further for new member updates
+	}
+
+	if (leftMember) {
+		console.log(leftMember);
+		// Handle left member logic if needed
+		return; // Stop processing further for member leaving updates
+	}
+
+	// Continue with whitelist checking for other updates
+	if (!ctx.from) {
 		await ctx.reply("I cannot determine who you are, please try again.");
+		return;
 	}
 	// const whitelist = [6974865060];
 	const whitelist = await client.smembers("whitelist:chat_id");
