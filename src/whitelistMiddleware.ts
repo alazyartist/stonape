@@ -8,7 +8,7 @@ export default async function isWhitelisted(
 	// await ctx.reply(`Checking if ${ctx.from.username} is whitelisted`);
 	const newMembers = ctx.update?.message?.new_chat_members;
 	const leftMember = ctx.update?.message?.left_chat_member;
-	const title = ctx.chat ctx.chat?.title : "this chat";
+	const title = ctx.chat ? ctx.chat?.title : "this chat";
 	if (newMembers) {
 		console.log(newMembers);
 		newMembers.forEach(async (member) => {
