@@ -43,12 +43,14 @@ function setupPump(conversation, ctx) {
             const info = yield conversation.external(() => helius_1.getPumpTokenInfo(contract_address));
             const { image, name, description, symbol } = info;
             const keyboard = new grammy_1.InlineKeyboard().text("Yes", "yes").text("No", "no");
+            const description_prev = description.slice(0, 60);
+            const uftDescript = Buffer.from(description_prev, "utf-8").toString("utf-8");
             yield ctx.replyWithPhoto(image, {
                 caption: `You have provided the contract address: 
         <code>${contract_address}</code>
         Token Name: ${name}
         Token Symbol: ${symbol}
-        Token Description: ${description.slice(0, 60)}...
+        Token Description: ${utfDescript}...
 
         <b> Is this correct?</b>`,
                 reply_markup: keyboard,
