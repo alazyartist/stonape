@@ -44,7 +44,7 @@ function setupPump(conversation, ctx) {
             const { image, name, description, symbol } = info;
             const keyboard = new grammy_1.InlineKeyboard().text("Yes", "yes").text("No", "no");
             const description_prev = description.slice(0, 60);
-            const uftDescript = Buffer.from(description_prev, "utf-8").toString("utf-8");
+            const utfDescript = Buffer.from(description_prev, "utf-8").toString("utf-8");
             yield ctx.replyWithPhoto(image, {
                 caption: `You have provided the contract address: 
         <code>${contract_address}</code>
