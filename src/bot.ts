@@ -97,7 +97,7 @@ bot.command("start", (ctx) =>
 		reply_markup: menu,
 	})
 );
-bot.command("/tip_bot_dev", (ctx) =>
+bot.command("tip_bot_dev", (ctx) =>
 	ctx.replyWithPhoto(new InputFile("./watchitpump.webp"), {
 		caption: `That's so thoughtful of you, 😍😍
 		You can tip the dev at the following addresses:
