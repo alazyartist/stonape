@@ -37,7 +37,6 @@ const conversations_1 = require("@grammyjs/conversations");
 const grammy_1 = require("grammy");
 const auto_retry_1 = require("@grammyjs/auto-retry");
 const menu_1 = require("@grammyjs/menu");
-const casetup_1 = require("./conversations/casetup");
 const about_1 = __importDefault(require("./commands/about"));
 const topPools_1 = require("./commands/topPools");
 const setupPump_1 = __importDefault(require("./conversations/setupPump"));
@@ -57,6 +56,7 @@ exports.bot.api.config.use(auto_retry_1.autoRetry({
     maxDelaySeconds: 1000,
 }));
 exports.bot.use(grammy_middlewares_1.ignoreOld(60));
+const needsWhitelist = new grammy_1.Composer();
 exports.bot.command("check_wallet", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const wallet = (_b = (_a = ctx.message) === null || _a === void 0 ? void 0 : _a.text) === null || _b === void 0 ? void 0 : _b.split(" ")[1];
@@ -78,7 +78,10 @@ please contact the dev @alazyartist`);
 exports.bot.command("list_pumps", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield listPumps_1.listPumps(ctx);
 }));
-exports.bot.use((ctx, next) => whitelistMiddleware_1.default(ctx, next));
+needsWhitelist.use((ctx, next) => {
+    console.log("ThisCommand NeedsWhitelist");
+    whitelistMiddleware_1.default(ctx, next);
+});
 exports.bot.use(grammy_1.session({ initial: () => ({}) }));
 exports.bot.use(conversations_1.conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
@@ -87,7 +90,7 @@ exports.bot.catch((err) => {
     console.error(`Error for ${err.ctx.update.message}`, err);
     exports.bot.start();
 });
-exports.bot.use(conversations_1.createConversation(casetup_1.caSetup));
+// bot.use(createConversation(caSetup));
 exports.bot.use(conversations_1.createConversation(about_1.default));
 exports.bot.use(conversations_1.createConversation(setupPump_1.default));
 exports.bot.use(conversations_1.createConversation(removePump_1.default));
@@ -101,7 +104,7 @@ exports.bot.api.setMyCommands([
     { command: "setup_pump", description: "Setup a PumpFun BuyBot" },
     { command: "remove_pump", description: "Remove a PumpFun BuyBot" },
     { command: "check_wallet", description: "Checks Whitelist" },
-    { command: "all", description: "List all commands" },
+    // { command: "all", description: "List all commands" },
 ]);
 const menu = new menu_1.Menu("main-menu").text("watch.it.pump", (ctx) => ctx.conversation.enter("setupPump"));
 exports.bot.use(menu);
@@ -119,14 +122,70 @@ exports.bot.command("tip_bot_dev", (ctx) => ctx.replyWithPhoto(new grammy_1.Inpu
 		`,
     reply_markup: menu,
 }));
-exports.bot.command("ca", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.conversation.enter("caSetup");
+// bot.command("ca", async (ctx) => {
+// 	await ctx.conversation.enter("caSetup");
+// });
+exports.bot.command("top", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield topPools_1.topPools(ctx);
 }));
+exports.bot.command("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield ctx.conversation.enter("aboutToken");
+}));
+exports.bot.command("chatid", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    console.log((_c = ctx.chat) === null || _c === void 0 ? void 0 : _c.id);
+}));
+needsWhitelist.command("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield ctx.conversation.enter("setupPump");
+}));
+needsWhitelist.command("remove_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield ctx.conversation.enter("removePump");
+}));
+exports.bot.callbackQuery("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(ctx.match);
+}));
+// bot.callbackQuery("ca_setup", async (ctx) => {
+// 	await ctx.conversation.enter("caSetup");
+// });
+needsWhitelist.callbackQuery("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield ctx.conversation.enter("setupPump");
+}));
+exports.bot.on(":text").hears("ape", (ctx) => {
+    ctx.reply("🦍", {
+        reply_markup: {
+            inline_keyboard: [
+                [
+                    { text: "🦍", callback_data: "ape" },
+                    { text: "Don't Ape", callback_data: "no" },
+                ],
+            ],
+        },
+    });
+});
+needsWhitelist.on(":text").hears("watch.it.pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield ctx.conversation.enter("setupPump");
+}));
+exports.bot.callbackQuery("ape", (ctx) => {
+    ctx.reply("We are gonna 🦍 it");
+    ctx.conversation.exit("caSetup");
+});
+exports.bot.callbackQuery("no", (ctx) => {
+    ctx.reply("I guess you hate money 🤷‍♂️");
+    ctx.conversation.exit("*");
+});
+console.log("Bot is running...");
+// bot.start();
 exports.bot.command("test", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Test Command");
     yield ctx.replyWithChatAction("typing");
     setTimeout(() => {
         ctx.reply("Random Test Comlpeted after delay");
     }, 1200);
+}));
+exports.bot.use(needsWhitelist);
+exports.bot.on(":text", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(ctx);
+    console.log(ctx.chat);
 }));
 // 	// 	try {
 // 	// 		const connection = new Connection(clusterApiUrl("mainnet-beta"));
@@ -171,56 +230,3 @@ exports.bot.command("test", (ctx) => __awaiter(void 0, void 0, void 0, function*
 // 		ctx.reply("An error occurred");
 // 	}
 // });
-exports.bot.command("top", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield topPools_1.topPools(ctx);
-}));
-exports.bot.command("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.conversation.enter("aboutToken");
-}));
-exports.bot.command("chatid", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
-    console.log((_c = ctx.chat) === null || _c === void 0 ? void 0 : _c.id);
-}));
-exports.bot.command("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.conversation.enter("setupPump");
-}));
-exports.bot.command("remove_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.conversation.enter("removePump");
-}));
-exports.bot.callbackQuery("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(ctx.match);
-}));
-exports.bot.callbackQuery("ca_setup", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.conversation.enter("caSetup");
-}));
-exports.bot.callbackQuery("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.conversation.enter("setupPump");
-}));
-exports.bot.on(":text").hears("ape", (ctx) => {
-    ctx.reply("🦍", {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: "🦍", callback_data: "ape" },
-                    { text: "Don't Ape", callback_data: "no" },
-                ],
-            ],
-        },
-    });
-});
-exports.bot.on(":text", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(ctx);
-    console.log(ctx.chat);
-}));
-exports.bot.on(":text").hears("watch.it.pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.conversation.enter("setupPump");
-}));
-exports.bot.callbackQuery("ape", (ctx) => {
-    ctx.reply("We are gonna 🦍 it");
-    ctx.conversation.exit("caSetup");
-});
-exports.bot.callbackQuery("no", (ctx) => {
-    ctx.reply("I guess you hate money 🤷‍♂️");
-    ctx.conversation.exit("*");
-});
-console.log("Bot is running...");

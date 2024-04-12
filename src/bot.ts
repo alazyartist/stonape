@@ -5,7 +5,14 @@ import {
 	conversations,
 	createConversation,
 } from "@grammyjs/conversations";
-import { Bot, Context, session, NextFunction, InputFile } from "grammy";
+import {
+	Bot,
+	Context,
+	Composer,
+	session,
+	NextFunction,
+	InputFile,
+} from "grammy";
 import { autoRetry } from "@grammyjs/auto-retry";
 import { Menu } from "@grammyjs/menu";
 import { PublicKey } from "@solana/web3.js";
@@ -38,6 +45,8 @@ bot.api.config.use(
 	})
 );
 bot.use(ignoreOld(60));
+const needsWhitelist = new Composer<MyContext>();
+
 bot.command("check_wallet", async (ctx) => {
 	const wallet = ctx.message?.text?.split(" ")[1];
 	if (!wallet) {
@@ -58,7 +67,10 @@ please contact the dev @alazyartist`);
 bot.command("list_pumps", async (ctx) => {
 	await listPumps(ctx);
 });
-bot.use((ctx, next) => isWhitelisted(ctx, next));
+needsWhitelist.use((ctx, next) => {
+	console.log("ThisCommand NeedsWhitelist");
+	isWhitelisted(ctx, next);
+});
 bot.use(session({ initial: () => ({}) }));
 bot.use(conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
@@ -69,7 +81,7 @@ bot.catch((err) => {
 	console.error(`Error for ${err.ctx.update.message}`, err);
 	bot.start();
 });
-bot.use(createConversation(caSetup));
+// bot.use(createConversation(caSetup));
 bot.use(createConversation(aboutToken));
 bot.use(createConversation(setupPump));
 bot.use(createConversation(removePump));
@@ -84,7 +96,7 @@ bot.api.setMyCommands([
 	{ command: "setup_pump", description: "Setup a PumpFun BuyBot" },
 	{ command: "remove_pump", description: "Remove a PumpFun BuyBot" },
 	{ command: "check_wallet", description: "Checks Whitelist" },
-	{ command: "all", description: "List all commands" },
+	// { command: "all", description: "List all commands" },
 ]);
 const menu = new Menu<MyContext>("main-menu").text("watch.it.pump", (ctx) =>
 	ctx.conversation.enter("setupPump")
@@ -106,16 +118,74 @@ bot.command("tip_bot_dev", (ctx) =>
 		reply_markup: menu,
 	})
 );
-bot.command("ca", async (ctx) => {
-	await ctx.conversation.enter("caSetup");
+// bot.command("ca", async (ctx) => {
+// 	await ctx.conversation.enter("caSetup");
+// });
+
+bot.command("top", async (ctx) => {
+	await topPools(ctx);
+});
+bot.command("about", async (ctx) => {
+	await ctx.conversation.enter("aboutToken");
+});
+bot.command("chatid", async (ctx) => {
+	console.log(ctx.chat?.id);
+});
+needsWhitelist.command("setup_pump", async (ctx) => {
+	await ctx.conversation.enter("setupPump");
+});
+needsWhitelist.command("remove_pump", async (ctx) => {
+	await ctx.conversation.enter("removePump");
+});
+bot.callbackQuery("about", async (ctx) => {
+	console.log(ctx.match);
+});
+// bot.callbackQuery("ca_setup", async (ctx) => {
+// 	await ctx.conversation.enter("caSetup");
+// });
+needsWhitelist.callbackQuery("setup_pump", async (ctx) => {
+	await ctx.conversation.enter("setupPump");
+});
+bot.on(":text").hears("ape", (ctx) => {
+	ctx.reply("🦍", {
+		reply_markup: {
+			inline_keyboard: [
+				[
+					{ text: "🦍", callback_data: "ape" },
+					{ text: "Don't Ape", callback_data: "no" },
+				],
+			],
+		},
+	});
 });
 
+needsWhitelist.on(":text").hears("watch.it.pump", async (ctx) => {
+	await ctx.conversation.enter("setupPump");
+});
+bot.callbackQuery("ape", (ctx) => {
+	ctx.reply("We are gonna 🦍 it");
+	ctx.conversation.exit("caSetup");
+});
+bot.callbackQuery("no", (ctx) => {
+	ctx.reply("I guess you hate money 🤷‍♂️");
+	ctx.conversation.exit("*");
+});
+console.log("Bot is running...");
+// bot.start();
+
 bot.command("test", async (ctx) => {
+	console.log("Test Command");
 	await ctx.replyWithChatAction("typing");
 	setTimeout(() => {
 		ctx.reply("Random Test Comlpeted after delay");
 	}, 1200);
 });
+bot.use(needsWhitelist);
+bot.on(":text", async (ctx) => {
+	console.log(ctx);
+	console.log(ctx.chat);
+});
+export { MyContext, MyConversation };
 // 	// 	try {
 // 	// 		const connection = new Connection(clusterApiUrl("mainnet-beta"));
 // 	// 		// "DtFjJtZs1N1Mi1SR5aUyfigAT1ssLEUHeruZPF3QNy6F"
@@ -160,64 +230,3 @@ bot.command("test", async (ctx) => {
 // 		ctx.reply("An error occurred");
 // 	}
 // });
-bot.command("top", async (ctx) => {
-	await topPools(ctx);
-});
-bot.command("about", async (ctx) => {
-	await ctx.conversation.enter("aboutToken");
-});
-bot.command("chatid", async (ctx) => {
-	console.log(ctx.chat?.id);
-});
-bot.command("setup_pump", async (ctx) => {
-	await ctx.conversation.enter("setupPump");
-});
-bot.command("remove_pump", async (ctx) => {
-	await ctx.conversation.enter("removePump");
-});
-bot.callbackQuery("about", async (ctx) => {
-	console.log(ctx.match);
-});
-bot.callbackQuery("ca_setup", async (ctx) => {
-	await ctx.conversation.enter("caSetup");
-});
-bot.callbackQuery("setup_pump", async (ctx) => {
-	await ctx.conversation.enter("setupPump");
-});
-bot.on(":text").hears("ape", (ctx) => {
-	ctx.reply("🦍", {
-		reply_markup: {
-			inline_keyboard: [
-				[
-					{ text: "🦍", callback_data: "ape" },
-					{ text: "Don't Ape", callback_data: "no" },
-				],
-			],
-		},
-	});
-});
-
-bot.on(":text", async (ctx) => {
-	console.log(ctx);
-	console.log(ctx.chat);
-});
-
-bot.on(":text").hears("watch.it.pump", async (ctx) => {
-	await ctx.conversation.enter("setupPump");
-});
-
-bot.callbackQuery("ape", (ctx) => {
-	ctx.reply("We are gonna 🦍 it");
-	ctx.conversation.exit("caSetup");
-});
-bot.callbackQuery("no", (ctx) => {
-	ctx.reply("I guess you hate money 🤷‍♂️");
-	ctx.conversation.exit("*");
-});
-console.log("Bot is running...");
-// bot.start();
-
-// StonFi();
-// console.log("Running Stonfi");
-
-export { MyContext, MyConversation };
