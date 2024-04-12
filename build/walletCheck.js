@@ -33,7 +33,7 @@ const web3_js_1 = require("@solana/web3.js");
 const redis_1 = require("./redis");
 dotenv.config();
 function checkWallet(ctx, wallet_to_check) {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         const user_chat_id = (_a = ctx.from) === null || _a === void 0 ? void 0 : _a.id;
         ctx.reply("Checking wallet, please wait...");
@@ -56,15 +56,16 @@ function checkWallet(ctx, wallet_to_check) {
                     if (whitelistSet.has(fromUserAccount)) {
                         console.log(`${fromUserAccount} is in the new whitelist.`);
                         redis_1.client.sadd("whitelist", fromUserAccount);
-                        redis_1.client.sadd("whitelist:chat_id", user_chat_id.toString());
-                        yield ctx.reply(`Wallet ${fromUserAccount} has been whitelisted`);
+                        yield ctx.reply(`Wallet ${fromUserAccount} is whitelisted`);
+                        // client.sadd("whitelist:chat_id", user_chat_id.toString());
                     }
                     else {
                         console.log(transaction.description);
                         yield redis_1.client.sadd("whitelist", fromUserAccount);
-                        yield redis_1.client.sadd("whitelist:chat_id", user_chat_id.toString());
+                        // await client.sadd("whitelist:chat_id", user_chat_id.toString());
                         whitelistSet.add(fromUserAccount);
                         console.log(`${fromUserAccount} added to the whitelist.`);
+                        // await ctx.reply(`Wallet ${fromUserAccount} has been whitelisted`);
                         // 					await ctx.reply(`
                         // Wallet ${fromUserAccount} added to the whitelist.
                         // You can now access the bot
@@ -74,6 +75,11 @@ function checkWallet(ctx, wallet_to_check) {
             }));
             const wl_recheck = yield redis_1.client.smembers("whitelist");
             console.log("check wallet", wl_recheck, wl_recheck.includes(wallet_to_check));
+            if (wl_recheck.includes(wallet_to_check)) {
+                redis_1.client.sadd("whitelist:chat_id", user_chat_id.toString());
+                console.log("Wallet is whitelisted in redis");
+                yield ctx.reply(`Telegram User ${(_b = ctx.from) === null || _b === void 0 ? void 0 : _b.username} added to the whitelist.`);
+            }
             return wl_recheck.includes(wallet_to_check);
         }
         catch (err) {

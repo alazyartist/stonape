@@ -12,17 +12,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const redis_1 = require("./redis");
 function isWhitelisted(ctx, next // is an alias for: () => Promise<void>
 ) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
-        // console.log(ctx.update.message.chat);
-        if (!ctx.chat)
-            return;
+        console.log(ctx);
+        console.log(ctx.update.message);
+        const chat = yield ctx.getChat();
+        console.log("chat", chat);
+        // if (!ctx.chat || ctx.chat.type) return;
         // await ctx.reply(`Checking if ${ctx.from.username} is whitelisted`);
         const newMembers = (_b = (_a = ctx.update) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.new_chat_members;
         const leftMember = (_d = (_c = ctx.update) === null || _c === void 0 ? void 0 : _c.message) === null || _d === void 0 ? void 0 : _d.left_chat_member;
-        const title = ["group", "supergroup", "channel"].includes((_e = ctx === null || ctx === void 0 ? void 0 : ctx.chat) === null || _e === void 0 ? void 0 : _e.type)
-            ? (_f = ctx === null || ctx === void 0 ? void 0 : ctx.chat) === null || _f === void 0 ? void 0 : _f.title
-            : "this chat";
+        if (chat.type === "private") {
+            return;
+        }
+        const title = chat.title;
         if (newMembers) {
             console.log(newMembers);
             newMembers.forEach((member) => __awaiter(this, void 0, void 0, function* () {
@@ -44,7 +47,8 @@ function isWhitelisted(ctx, next // is an alias for: () => Promise<void>
         }
         // const whitelist = [6974865060];
         const whitelist = yield redis_1.client.smembers("whitelist:chat_id");
-        const onWhitelist = whitelist.includes((_g = ctx === null || ctx === void 0 ? void 0 : ctx.from) === null || _g === void 0 ? void 0 : _g.id.toString());
+        const onWhitelist = whitelist.includes((_e = ctx === null || ctx === void 0 ? void 0 : ctx.from) === null || _e === void 0 ? void 0 : _e.id.toString());
+        console.log(whitelist);
         if (!onWhitelist) {
             yield ctx.reply(`
 You are not whitelisted, 

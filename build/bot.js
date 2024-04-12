@@ -61,7 +61,7 @@ exports.bot.command("check_wallet", (ctx) => __awaiter(void 0, void 0, void 0, f
     var _a, _b;
     const wallet = (_b = (_a = ctx.message) === null || _a === void 0 ? void 0 : _a.text) === null || _b === void 0 ? void 0 : _b.split(" ")[1];
     if (!wallet) {
-        ctx.reply("please enter '/check_wallet [wallet_addr]' to check wallet");
+        ctx.reply("please enter /check_wallet [wallet_addr] to check wallet");
         return;
     }
     const wallet_check = yield walletCheck_1.default(ctx, wallet);
@@ -79,7 +79,7 @@ exports.bot.command("list_pumps", (ctx) => __awaiter(void 0, void 0, void 0, fun
     yield listPumps_1.listPumps(ctx);
 }));
 needsWhitelist.use((ctx, next) => {
-    console.log("ThisCommand NeedsWhitelist");
+    console.log("This Command Needs Whitelist");
     whitelistMiddleware_1.default(ctx, next);
 });
 exports.bot.use(grammy_1.session({ initial: () => ({}) }));
@@ -150,18 +150,18 @@ exports.bot.callbackQuery("about", (ctx) => __awaiter(void 0, void 0, void 0, fu
 needsWhitelist.callbackQuery("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("setupPump");
 }));
-exports.bot.on(":text").hears("ape", (ctx) => {
-    ctx.reply("🦍", {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: "🦍", callback_data: "ape" },
-                    { text: "Don't Ape", callback_data: "no" },
-                ],
-            ],
-        },
-    });
-});
+// bot.on(":text").hears("ape", (ctx) => {
+// 	ctx.reply("🦍", {
+// 		reply_markup: {
+// 			inline_keyboard: [
+// 				[
+// 					{ text: "🦍", callback_data: "ape" },
+// 					{ text: "Don't Ape", callback_data: "no" },
+// 				],
+// 			],
+// 		},
+// 	});
+// });
 needsWhitelist.on(":text").hears("watch.it.pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("setupPump");
 }));

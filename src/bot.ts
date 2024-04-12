@@ -50,7 +50,7 @@ const needsWhitelist = new Composer<MyContext>();
 bot.command("check_wallet", async (ctx) => {
 	const wallet = ctx.message?.text?.split(" ")[1];
 	if (!wallet) {
-		ctx.reply("please enter '/check_wallet [wallet_addr]' to check wallet");
+		ctx.reply("please enter /check_wallet [wallet_addr] to check wallet");
 		return;
 	}
 	const wallet_check = await checkWallet(ctx, wallet);
@@ -68,7 +68,7 @@ bot.command("list_pumps", async (ctx) => {
 	await listPumps(ctx);
 });
 needsWhitelist.use((ctx, next) => {
-	console.log("ThisCommand NeedsWhitelist");
+	console.log("This Command Needs Whitelist");
 	isWhitelisted(ctx, next);
 });
 bot.use(session({ initial: () => ({}) }));
@@ -146,18 +146,18 @@ bot.callbackQuery("about", async (ctx) => {
 needsWhitelist.callbackQuery("setup_pump", async (ctx) => {
 	await ctx.conversation.enter("setupPump");
 });
-bot.on(":text").hears("ape", (ctx) => {
-	ctx.reply("🦍", {
-		reply_markup: {
-			inline_keyboard: [
-				[
-					{ text: "🦍", callback_data: "ape" },
-					{ text: "Don't Ape", callback_data: "no" },
-				],
-			],
-		},
-	});
-});
+// bot.on(":text").hears("ape", (ctx) => {
+// 	ctx.reply("🦍", {
+// 		reply_markup: {
+// 			inline_keyboard: [
+// 				[
+// 					{ text: "🦍", callback_data: "ape" },
+// 					{ text: "Don't Ape", callback_data: "no" },
+// 				],
+// 			],
+// 		},
+// 	});
+// });
 
 needsWhitelist.on(":text").hears("watch.it.pump", async (ctx) => {
 	await ctx.conversation.enter("setupPump");

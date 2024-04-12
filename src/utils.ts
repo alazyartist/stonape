@@ -1,6 +1,5 @@
 import { PublicKey, Connection, clusterApiUrl } from "@solana/web3.js";
 import { storeSolanaPrice, getSolanaPrice, client } from "./redis";
-import { GrammyError } from "grammy";
 import { bot } from "./bot";
 function convertToK(value: string) {
 	if (parseFloat(value) < 1000) return value;
@@ -93,7 +92,7 @@ async function calculateBondingCurve(
 			(1 - (total_supply - 204_000_000) / 800_000_000) * 100;
 		console.log(bonding_percent);
 		return {
-			bonding_percent,
+			bonding_percent: bonding_percent.toFixed(2),
 			progress_bar: generateBondingCurveProgress(bonding_percent),
 		};
 	} catch (err) {
@@ -140,11 +139,11 @@ function generateBondingCurveProgress(percent: number) {
 	}
 }
 
-async function getChatAdministrators(chatId) {
+async function getChatAdministrators(chatId: number) {
 	try {
 		const admins = await bot.api.getChatAdministrators(chatId);
 		return admins;
-	} catch (error: GrammyError) {
+	} catch (error: any) {
 		if (
 			error.error_code === 400 &&
 			error.parameters &&

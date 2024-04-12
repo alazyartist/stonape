@@ -34,14 +34,15 @@ async function checkWallet(ctx: MyContext, wallet_to_check: string) {
 				if (whitelistSet.has(fromUserAccount)) {
 					console.log(`${fromUserAccount} is in the new whitelist.`);
 					client.sadd("whitelist", fromUserAccount);
-					client.sadd("whitelist:chat_id", user_chat_id.toString());
-					await ctx.reply(`Wallet ${fromUserAccount} has been whitelisted`);
+					await ctx.reply(`Wallet ${fromUserAccount} is whitelisted`);
+					// client.sadd("whitelist:chat_id", user_chat_id.toString());
 				} else {
 					console.log(transaction.description);
 					await client.sadd("whitelist", fromUserAccount);
-					await client.sadd("whitelist:chat_id", user_chat_id.toString());
+					// await client.sadd("whitelist:chat_id", user_chat_id.toString());
 					whitelistSet.add(fromUserAccount);
 					console.log(`${fromUserAccount} added to the whitelist.`);
+					// await ctx.reply(`Wallet ${fromUserAccount} has been whitelisted`);
 					// 					await ctx.reply(`
 					// Wallet ${fromUserAccount} added to the whitelist.
 					// You can now access the bot
@@ -55,6 +56,13 @@ async function checkWallet(ctx: MyContext, wallet_to_check: string) {
 			wl_recheck,
 			wl_recheck.includes(wallet_to_check)
 		);
+		if (wl_recheck.includes(wallet_to_check)) {
+			client.sadd("whitelist:chat_id", user_chat_id.toString());
+			console.log("Wallet is whitelisted in redis");
+			await ctx.reply(
+				`Telegram User ${ctx.from?.username} added to the whitelist.`
+			);
+		}
 		return wl_recheck.includes(wallet_to_check);
 	} catch (err) {
 		console.error(err);

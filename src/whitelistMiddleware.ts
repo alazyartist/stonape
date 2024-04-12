@@ -4,14 +4,19 @@ export default async function isWhitelisted(
 	ctx: Context,
 	next: NextFunction // is an alias for: () => Promise<void>
 ): Promise<void> {
-	// console.log(ctx.update.message.chat);
-	if (!ctx.chat) return;
+	console.log(ctx);
+	console.log(ctx.update.message);
+	const chat = await ctx.getChat();
+	console.log("chat", chat);
+	// if (!ctx.chat || ctx.chat.type) return;
 	// await ctx.reply(`Checking if ${ctx.from.username} is whitelisted`);
 	const newMembers = ctx.update?.message?.new_chat_members;
 	const leftMember = ctx.update?.message?.left_chat_member;
-	const title = ["group", "supergroup", "channel"].includes(ctx?.chat?.type)
-		? ctx?.chat?.title
-		: "this chat";
+
+	if (chat.type === "private") {
+		return;
+	}
+	const title = chat.title;
 	if (newMembers) {
 		console.log(newMembers);
 		newMembers.forEach(async (member) => {
@@ -36,6 +41,7 @@ export default async function isWhitelisted(
 	// const whitelist = [6974865060];
 	const whitelist = await client.smembers("whitelist:chat_id");
 	const onWhitelist = whitelist.includes(ctx?.from?.id.toString());
+	console.log(whitelist);
 	if (!onWhitelist) {
 		await ctx.reply(
 			`

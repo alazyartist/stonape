@@ -90,7 +90,7 @@ function calculateBondingCurve(address, owner_addr, program_id) {
             const bonding_percent = (1 - (total_supply - 204000000) / 800000000) * 100;
             console.log(bonding_percent);
             return {
-                bonding_percent,
+                bonding_percent: bonding_percent.toFixed(2),
                 progress_bar: generateBondingCurveProgress(bonding_percent),
             };
         }

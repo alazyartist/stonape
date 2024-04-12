@@ -62,7 +62,7 @@ app.post("/", (req: Request, res: Response) => {
 					let bc_percent = "idk maybe";
 					let bc_display = "🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜";
 					if (bonding_curve !== undefined) {
-						bc_percent = bonding_curve?.bonding_percent.toFixed(2);
+						bc_percent = bonding_curve?.bonding_percent;
 						bc_display = bonding_curve?.progress_bar;
 					}
 
@@ -107,8 +107,8 @@ app.post("/", (req: Request, res: Response) => {
 			📊| Market Cap ${marketCap}
 					
 				    		🚀 a winning choice 🚀        
-							Bonding Curve Filled ${bonding_curve.bonding_percent.toFixed(2)}%
-							${bonding_curve.progress_bar}
+							Bonding Curve Filled ${bc_percent}%
+							${bc_display}
 				<a href='https://pump.fun/${mint_addr}'>BUY on pump.fun</a>
 
 				<code>${mint_addr}</code>

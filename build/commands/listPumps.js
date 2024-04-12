@@ -24,7 +24,7 @@ function listPumps(ctx) {
         }
         const keyboard = new grammy_1.InlineKeyboard();
         const infoPromises = active_pumps.map((ca) => helius_1.getPumpTokenInfo(ca));
-        const tokenAddrPromises = active_pumps.map((ca) => __awaiter(this, void 0, void 0, function* () {
+        const tokenAddrPromises = yield Promise.all(active_pumps.map((ca) => __awaiter(this, void 0, void 0, function* () {
             const token_addr = yield redis_js_1.client.hget(ca, "token_account");
             if (token_addr)
                 return token_addr;
@@ -32,7 +32,7 @@ function listPumps(ctx) {
             // 	const connection = new Connection(clusterApiUrl("mainnet-beta"));
             // 	let token_account = await connection.getParsedTokenAccountsByOwner(owner, {
             // 		mint: ca,
-            // 	}); 
+            // 	});
             // 	const token_account_addr = token_account.value[0].pubkey;
             // 	await client.hset(
             // 		ca,
@@ -41,21 +41,27 @@ function listPumps(ctx) {
             // 	);
             // 	return token_account_addr.toBase58();
             // }
-        }));
+            return "No Token Address";
+        })));
         const chatIdPromises = active_pumps.map((ca) => redis_js_1.getChatId(ca));
         const groupNamePromises = active_pumps.map((ca) => redis_js_1.getGroupName(ca));
         try {
             const infos = yield Promise.all(infoPromises);
             const chatIds = yield Promise.all(chatIdPromises);
             const groupNames = yield Promise.all(groupNamePromises);
-            const message = yield Promise.all(infos
-                .map((data, index) => __awaiter(this, void 0, void 0, function* () {
+            const message = yield Promise.all(infos.map((data, index) => __awaiter(this, void 0, void 0, function* () {
                 const bonding_curve = yield utils_1.calculateBondingCurve(active_pumps[index], tokenAddrPromises[index], infos[index].program_id);
                 console.log(active_pumps[index], tokenAddrPromises[index], infos[index].program_id);
                 const group_name = groupNames[index];
-                const percent = (bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.bonding_percent) ? bonding_curve.bonding_percent : 'idk Maybe';
-                const progress = (bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.progress_bar) ? bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.progress_bar : '🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜';
-                keyboard.url(data.name, `https://pump.fun/${active_pumps[index]}`).row();
+                const percent = (bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.bonding_percent)
+                    ? bonding_curve.bonding_percent
+                    : "idk Maybe";
+                const progress = (bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.progress_bar)
+                    ? bonding_curve === null || bonding_curve === void 0 ? void 0 : bonding_curve.progress_bar
+                    : "🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜";
+                keyboard
+                    .url(data.name, `https://pump.fun/${active_pumps[index]}`)
+                    .row();
                 return `
 ${index + 1}. ${data.name} 
 ${percent}- 
