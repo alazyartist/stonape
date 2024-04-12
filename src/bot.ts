@@ -45,7 +45,6 @@ bot.api.config.use(
 	})
 );
 bot.use(ignoreOld(60));
-const needsWhitelist = new Composer<MyContext>();
 
 bot.command("check_wallet", async (ctx) => {
 	const wallet = ctx.message?.text?.split(" ")[1];
@@ -67,10 +66,7 @@ please contact the dev @alazyartist`);
 bot.command("list_pumps", async (ctx) => {
 	await listPumps(ctx);
 });
-needsWhitelist.use((ctx, next) => {
-	console.log("This Command Needs Whitelist");
-	isWhitelisted(ctx, next);
-});
+
 bot.use(session({ initial: () => ({}) }));
 bot.use(conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
@@ -131,20 +127,49 @@ bot.command("about", async (ctx) => {
 bot.command("chatid", async (ctx) => {
 	console.log(ctx.chat?.id);
 });
+bot.callbackQuery("about", async (ctx) => {
+	console.log(ctx.match);
+});
+bot.callbackQuery("ape", (ctx) => {
+	ctx.reply("We are gonna 🦍 it");
+	ctx.conversation.exit("caSetup");
+});
+bot.callbackQuery("no", (ctx) => {
+	ctx.reply("I guess you hate money 🤷‍♂️");
+	ctx.conversation.exit("*");
+});
+bot.command("test", async (ctx) => {
+	console.log("Test Command");
+	await ctx.replyWithChatAction("typing");
+	setTimeout(() => {
+		ctx.reply("Random Test Comlpeted after delay");
+	}, 1200);
+});
+// bot.callbackQuery("ca_setup", async (ctx) => {
+// 	await ctx.conversation.enter("caSetup");
+// });
+bot.use(async (ctx, next) => {
+	console.log(ctx.message?.text);
+	await next();
+});
+
+const needsWhitelist = new Composer<MyContext>();
+needsWhitelist
+	.filter((ctx) =>
+		ctx.hasCommand(["setup_pump", "remove_pump", "watch.it.pump"])
+	)
+	.use((ctx, next) => {
+		console.log("This Command Needs Whitelist");
+		isWhitelisted(ctx, next);
+	});
+needsWhitelist.callbackQuery("setup_pump", async (ctx) => {
+	await ctx.conversation.enter("setupPump");
+});
 needsWhitelist.command("setup_pump", async (ctx) => {
 	await ctx.conversation.enter("setupPump");
 });
 needsWhitelist.command("remove_pump", async (ctx) => {
 	await ctx.conversation.enter("removePump");
-});
-bot.callbackQuery("about", async (ctx) => {
-	console.log(ctx.match);
-});
-// bot.callbackQuery("ca_setup", async (ctx) => {
-// 	await ctx.conversation.enter("caSetup");
-// });
-needsWhitelist.callbackQuery("setup_pump", async (ctx) => {
-	await ctx.conversation.enter("setupPump");
 });
 // bot.on(":text").hears("ape", (ctx) => {
 // 	ctx.reply("🦍", {
@@ -162,24 +187,10 @@ needsWhitelist.callbackQuery("setup_pump", async (ctx) => {
 needsWhitelist.on(":text").hears("watch.it.pump", async (ctx) => {
 	await ctx.conversation.enter("setupPump");
 });
-bot.callbackQuery("ape", (ctx) => {
-	ctx.reply("We are gonna 🦍 it");
-	ctx.conversation.exit("caSetup");
-});
-bot.callbackQuery("no", (ctx) => {
-	ctx.reply("I guess you hate money 🤷‍♂️");
-	ctx.conversation.exit("*");
-});
+
 console.log("Bot is running...");
 // bot.start();
 
-bot.command("test", async (ctx) => {
-	console.log("Test Command");
-	await ctx.replyWithChatAction("typing");
-	setTimeout(() => {
-		ctx.reply("Random Test Comlpeted after delay");
-	}, 1200);
-});
 bot.use(needsWhitelist);
 // bot.on(":text", async (ctx) => {
 // 	console.log(ctx);

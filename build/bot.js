@@ -56,7 +56,6 @@ exports.bot.api.config.use(auto_retry_1.autoRetry({
     maxDelaySeconds: 1000,
 }));
 exports.bot.use(grammy_middlewares_1.ignoreOld(60));
-const needsWhitelist = new grammy_1.Composer();
 exports.bot.command("check_wallet", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const wallet = (_b = (_a = ctx.message) === null || _a === void 0 ? void 0 : _a.text) === null || _b === void 0 ? void 0 : _b.split(" ")[1];
@@ -78,10 +77,6 @@ please contact the dev @alazyartist`);
 exports.bot.command("list_pumps", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield listPumps_1.listPumps(ctx);
 }));
-needsWhitelist.use((ctx, next) => {
-    console.log("This Command Needs Whitelist");
-    whitelistMiddleware_1.default(ctx, next);
-});
 exports.bot.use(grammy_1.session({ initial: () => ({}) }));
 exports.bot.use(conversations_1.conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
@@ -135,20 +130,47 @@ exports.bot.command("chatid", (ctx) => __awaiter(void 0, void 0, void 0, functio
     var _c;
     console.log((_c = ctx.chat) === null || _c === void 0 ? void 0 : _c.id);
 }));
+exports.bot.callbackQuery("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(ctx.match);
+}));
+exports.bot.callbackQuery("ape", (ctx) => {
+    ctx.reply("We are gonna 🦍 it");
+    ctx.conversation.exit("caSetup");
+});
+exports.bot.callbackQuery("no", (ctx) => {
+    ctx.reply("I guess you hate money 🤷‍♂️");
+    ctx.conversation.exit("*");
+});
+exports.bot.command("test", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Test Command");
+    yield ctx.replyWithChatAction("typing");
+    setTimeout(() => {
+        ctx.reply("Random Test Comlpeted after delay");
+    }, 1200);
+}));
+// bot.callbackQuery("ca_setup", async (ctx) => {
+// 	await ctx.conversation.enter("caSetup");
+// });
+exports.bot.use((ctx, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    console.log((_d = ctx.message) === null || _d === void 0 ? void 0 : _d.text);
+    yield next();
+}));
+const needsWhitelist = new grammy_1.Composer();
+needsWhitelist
+    .filter((ctx) => ctx.hasCommand(["setup_pump", "remove_pump", "watch.it.pump"]))
+    .use((ctx, next) => {
+    console.log("This Command Needs Whitelist");
+    whitelistMiddleware_1.default(ctx, next);
+});
+needsWhitelist.callbackQuery("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield ctx.conversation.enter("setupPump");
+}));
 needsWhitelist.command("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("setupPump");
 }));
 needsWhitelist.command("remove_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("removePump");
-}));
-exports.bot.callbackQuery("about", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(ctx.match);
-}));
-// bot.callbackQuery("ca_setup", async (ctx) => {
-// 	await ctx.conversation.enter("caSetup");
-// });
-needsWhitelist.callbackQuery("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.conversation.enter("setupPump");
 }));
 // bot.on(":text").hears("ape", (ctx) => {
 // 	ctx.reply("🦍", {
@@ -165,23 +187,8 @@ needsWhitelist.callbackQuery("setup_pump", (ctx) => __awaiter(void 0, void 0, vo
 needsWhitelist.on(":text").hears("watch.it.pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("setupPump");
 }));
-exports.bot.callbackQuery("ape", (ctx) => {
-    ctx.reply("We are gonna 🦍 it");
-    ctx.conversation.exit("caSetup");
-});
-exports.bot.callbackQuery("no", (ctx) => {
-    ctx.reply("I guess you hate money 🤷‍♂️");
-    ctx.conversation.exit("*");
-});
 console.log("Bot is running...");
 // bot.start();
-exports.bot.command("test", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("Test Command");
-    yield ctx.replyWithChatAction("typing");
-    setTimeout(() => {
-        ctx.reply("Random Test Comlpeted after delay");
-    }, 1200);
-}));
 exports.bot.use(needsWhitelist);
 // 	// 	try {
 // 	// 		const connection = new Connection(clusterApiUrl("mainnet-beta"));
