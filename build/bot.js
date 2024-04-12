@@ -154,7 +154,7 @@ exports.bot.command("test", (ctx) => __awaiter(void 0, void 0, void 0, function*
 exports.bot.use((ctx, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _d;
     console.log((_d = ctx.message) === null || _d === void 0 ? void 0 : _d.text);
-    yield next();
+    return;
 }));
 const needsWhitelist = new grammy_1.Composer();
 needsWhitelist

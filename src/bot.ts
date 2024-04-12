@@ -150,7 +150,7 @@ bot.command("test", async (ctx) => {
 // });
 bot.use(async (ctx, next) => {
 	console.log(ctx.message?.text);
-	await next();
+	return;
 });
 
 const needsWhitelist = new Composer<MyContext>();
