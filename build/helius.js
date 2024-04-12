@@ -45,11 +45,11 @@ function getPumpTokenInfo(contract_address) {
     var _a, _b, _c, _d, _e, _f, _g;
     return __awaiter(this, void 0, void 0, function* () {
         const info = yield redis_1.getTokenInfo(contract_address);
-        if (info) {
+        if (info !== null) {
             console.log("info from redis", info);
             return yield JSON.parse(info);
         }
-        if (!info) {
+        else {
             const response = yield fetch(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`, {
                 method: "POST",
                 headers: {
@@ -73,14 +73,6 @@ function getPumpTokenInfo(contract_address) {
                 image: image,
                 program_id: (_g = (_f = data === null || data === void 0 ? void 0 : data.result) === null || _f === void 0 ? void 0 : _f.token_info) === null || _g === void 0 ? void 0 : _g.token_program,
             };
-            if (!newInfo.name ||
-                !newInfo.symbol ||
-                !newInfo.description ||
-                !newInfo.image ||
-                !newInfo.program_id) {
-                console.error("No token info found for", contract_address);
-                return null;
-            }
             yield redis_1.storeTokenInfo(contract_address, newInfo);
             return newInfo;
         }

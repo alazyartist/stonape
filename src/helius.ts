@@ -16,11 +16,10 @@ const HELIUS_KEY =
 
 async function getPumpTokenInfo(contract_address: string) {
 	const info = await getTokenInfo(contract_address);
-	if (info) {
+	if (info !== null) {
 		console.log("info from redis", info);
 		return await JSON.parse(info);
-	}
-	if (!info) {
+	} else {
 		const response = await fetch(
 			`https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`,
 			{
@@ -48,16 +47,7 @@ async function getPumpTokenInfo(contract_address: string) {
 			image: image,
 			program_id: data?.result?.token_info?.token_program,
 		};
-		if (
-			!newInfo.name ||
-			!newInfo.symbol ||
-			!newInfo.description ||
-			!newInfo.image ||
-			!newInfo.program_id
-		) {
-			console.error("No token info found for", contract_address);
-			return null;
-		}
+
 		await storeTokenInfo(contract_address, newInfo);
 		return newInfo;
 	}
