@@ -150,6 +150,9 @@ bot.command("test", async (ctx) => {
 // });
 bot.use(async (ctx, next) => {
 	console.log(ctx.message?.text);
+	if (ctx.hasCommand(["setup_pump", "remove_pump", "watch.it.pump"])) {
+		return next();
+	}
 	return;
 });
 

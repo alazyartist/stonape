@@ -154,6 +154,9 @@ exports.bot.command("test", (ctx) => __awaiter(void 0, void 0, void 0, function*
 exports.bot.use((ctx, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _d;
     console.log((_d = ctx.message) === null || _d === void 0 ? void 0 : _d.text);
+    if (ctx.hasCommand(["setup_pump", "remove_pump", "watch.it.pump"])) {
+        return next();
+    }
     return;
 }));
 const needsWhitelist = new grammy_1.Composer();
