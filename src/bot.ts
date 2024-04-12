@@ -181,10 +181,10 @@ bot.command("test", async (ctx) => {
 	}, 1200);
 });
 bot.use(needsWhitelist);
-bot.on(":text", async (ctx) => {
-	console.log(ctx);
-	console.log(ctx.chat);
-});
+// bot.on(":text", async (ctx) => {
+// 	console.log(ctx);
+// 	console.log(ctx.chat);
+// });
 export { MyContext, MyConversation };
 // 	// 	try {
 // 	// 		const connection = new Connection(clusterApiUrl("mainnet-beta"));

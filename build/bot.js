@@ -183,10 +183,6 @@ exports.bot.command("test", (ctx) => __awaiter(void 0, void 0, void 0, function*
     }, 1200);
 }));
 exports.bot.use(needsWhitelist);
-exports.bot.on(":text", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(ctx);
-    console.log(ctx.chat);
-}));
 // 	// 	try {
 // 	// 		const connection = new Connection(clusterApiUrl("mainnet-beta"));
 // 	// 		// "DtFjJtZs1N1Mi1SR5aUyfigAT1ssLEUHeruZPF3QNy6F"
