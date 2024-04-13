@@ -28,7 +28,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGroupName = exports.clearPumpData = exports.getSolanaPrice = exports.storeSolanaPrice = exports.storeTokenInfo = exports.getTokenInfo = exports.getActivePumps = exports.getChatId = exports.getPumpData = exports.storePumpData = exports.getRedis = exports.setRedis = exports.client = void 0;
+exports.getGroupName = exports.extendTime = exports.clearPumpData = exports.getSolanaPrice = exports.storeSolanaPrice = exports.storeTokenInfo = exports.getTokenInfo = exports.getActivePumps = exports.getChatId = exports.getPumpData = exports.storePumpData = exports.getRedis = exports.setRedis = exports.client = void 0;
 const dotenv = __importStar(require("dotenv"));
 const ioredis_1 = require("ioredis");
 const helius_1 = require("./helius");
@@ -52,11 +52,18 @@ function storePumpData(contract_address, chat_id, group_name) {
             }
             console.log(res);
         });
-        yield client.expire(contract_address, 36000);
-        yield client.expire("active_pumps", 36000);
+        yield client.expire(contract_address, 864000);
+        yield client.expire("active_pumps", 864000);
     });
 }
 exports.storePumpData = storePumpData;
+function extendTime(contract_address) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield client.expire(contract_address, 864000);
+        yield client.expire("active_pumps", 864000);
+    });
+}
+exports.extendTime = extendTime;
 function storeTokenInfo(contract_address, token_info) {
     return __awaiter(this, void 0, void 0, function* () {
         yield client.hset(contract_address, { token_info: JSON.stringify(token_info) }, (err, res) => {

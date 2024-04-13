@@ -12,6 +12,8 @@
 		"@grammyjs/auto-retry": "^1.1.1",
 		"@grammyjs/conversations": "^1.2.0",
 		"@grammyjs/menu": "^1.2.1",
+		"@grammyjs/runner": "^2.0.3",
+		"@grammyjs/transformer-throttler": "^1.2.1",
 		"@solana/spl-token": "^0.4.3",
 		"@solana/web3.js": "^1.91.4",
 		"@ston-fi/sdk": "^0.4.0",

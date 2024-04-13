@@ -29,9 +29,11 @@ function getSolPriceGecko() {
     return __awaiter(this, void 0, void 0, function* () {
         const PRICE_OF_SOL = yield redis_1.getSolanaPrice();
         if (PRICE_OF_SOL !== "null" && PRICE_OF_SOL !== null) {
+            console.log("Fetching Solana Price from Redis");
             return parseFloat(PRICE_OF_SOL);
         }
         if (!PRICE_OF_SOL || PRICE_OF_SOL === "null") {
+            console.log("Fetching Solana Price from Gecko");
             const data = yield fetch("https://api.geckoterminal.com/api/v2/simple/networks/solana/token_price/So11111111111111111111111111111111111111112");
             const json = yield data.json();
             const solPrice = (_b = (_a = json === null || json === void 0 ? void 0 : json.data) === null || _a === void 0 ? void 0 : _a.attributes) === null || _b === void 0 ? void 0 : _b.token_prices.So11111111111111111111111111111111111111112;

@@ -27,6 +27,7 @@ import removePump from "./conversations/removePump";
 import { ignoreOld, onlyPublic } from "grammy-middlewares";
 import isWhitelisted from "./whitelistMiddleware";
 import checkWallet from "./walletCheck";
+import { apiThrottler } from "@grammyjs/transformer-throttler";
 dotenv.config();
 
 type MyContext = Context & ConversationFlavor;
@@ -36,12 +37,13 @@ const BOT_TOKEN =
 		? process.env.TELEGRAM_DEV_TOKEN
 		: process.env.TELEGRAM_TOKEN;
 export const bot = new Bot<MyContext>(BOT_TOKEN as string);
-
+const throttler = apiThrottler();
+bot.api.config.use(throttler);
 // Use the plugin.
 bot.api.config.use(
 	autoRetry({
-		maxRetryAttempts: 4, // only repeat requests once
-		maxDelaySeconds: 1000,
+		maxRetryAttempts: 4,
+		maxDelaySeconds: 1200,
 	})
 );
 bot.use(ignoreOld(60));
@@ -71,9 +73,9 @@ bot.use(session({ initial: () => ({}) }));
 bot.use(conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
 bot.catch((err) => {
-	err.ctx.reply(
-		"An error occurred, please try again, if the error persists, contact the dev @alazyartist"
-	);
+	// err.ctx.reply(
+	// 	"An error occurred, please try again, if the error persists, contact the dev @alazyartist"
+	// );
 	console.error(`Error for ${err.ctx.update.message}`, err);
 	bot.start();
 });
@@ -174,6 +176,12 @@ needsWhitelist.command("setup_pump", async (ctx) => {
 needsWhitelist.command("remove_pump", async (ctx) => {
 	await ctx.conversation.enter("removePump");
 });
+needsWhitelist.command("remove_pump", async (ctx) => {
+	await ctx.conversation.enter("removePump");
+});
+// needsWhitelist.command("more_time", async (ctx) => {
+// 	extendTime(ctx);
+// });
 // bot.on(":text").hears("ape", (ctx) => {
 // 	ctx.reply("🦍", {
 // 		reply_markup: {
@@ -187,11 +195,10 @@ needsWhitelist.command("remove_pump", async (ctx) => {
 // 	});
 // });
 
-needsWhitelist.on(":text").hears("watch.it.pump", async (ctx) => {
-	await ctx.conversation.enter("setupPump");
-});
+// needsWhitelist.on(":text").hears("watch.it.pump", async (ctx) => {
+// 	await ctx.conversation.enter("setupPump");
+// });
 
-console.log("Bot is running...");
 // bot.start();
 
 bot.use(needsWhitelist);

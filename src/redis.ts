@@ -29,8 +29,12 @@ async function storePumpData(
 		}
 	);
 
-	await client.expire(contract_address, 36000);
-	await client.expire("active_pumps", 36000);
+	await client.expire(contract_address, 864000);
+	await client.expire("active_pumps", 864000);
+}
+async function extendTime(contract_address: string) {
+	await client.expire(contract_address, 864000);
+	await client.expire("active_pumps", 864000);
 }
 async function storeTokenInfo(contract_address: string, token_info: any) {
 	await client.hset(
@@ -123,5 +127,6 @@ export {
 	storeSolanaPrice,
 	getSolanaPrice,
 	clearPumpData,
+	extendTime,
 	getGroupName,
 };

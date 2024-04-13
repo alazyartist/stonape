@@ -37,12 +37,17 @@ const redis_js_1 = require("./redis.js");
 const helius_js_1 = require("./helius.js");
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
+const runner_1 = require("@grammyjs/runner");
 const utils_js_1 = require("./utils.js");
 const app = express_1.default();
 const port = process.env.MODE === "DEV" ? 80 : 5000;
 // Middleware to parse incoming requests with JSON payloads
 app.use(express_1.default.json());
-bot_js_1.bot.start();
+// bot.start();
+const runner = runner_1.run(bot_js_1.bot);
+if (runner.isRunning()) {
+    console.log("Runner Bot is running:", runner.isRunning());
+}
 // const chatid = "-4188325364";
 // Route for handling POST requests
 app.get("/", (req, res) => {
@@ -62,21 +67,23 @@ app.post("/", (req, res) => {
                 return;
             const fee_payer = message.feePayer;
             const IS_BUY = from_addr !== fee_payer;
-            if (message.mint_addr === "So11111111111111111111111111111111111111112") {
+            if (message.mint_addr === "So11111111111111111111111111111111111111112" ||
+                message.tokenTransfers[0].mint ===
+                    "So11111111111111111111111111111111111111112") {
                 return;
             }
             // if (from_addr === fee_payer) return;
             const mint_addr = message.tokenTransfers[0].mint;
             const token_amt = message.tokenTransfers[0].tokenAmount;
-            const sol_spent = Math.abs(parseInt((_b = message.accountData) === null || _b === void 0 ? void 0 : _b[0].nativeBalanceChange) / 1000000000);
             const chatid = yield redis_js_1.getChatId(mint_addr);
-            const userWallet = message.accountData[0].account;
-            const info = yield helius_js_1.getPumpTokenInfo(mint_addr);
-            const marketCap = yield utils_js_1.calculateMarketCap(sol_spent, token_amt);
             if (!chatid) {
                 console.log("No chat id found for", mint_addr);
                 return;
             }
+            const sol_spent = Math.abs(parseInt((_b = message.accountData) === null || _b === void 0 ? void 0 : _b[0].nativeBalanceChange) / 1000000000);
+            const userWallet = message.accountData[0].account;
+            const info = yield helius_js_1.getPumpTokenInfo(mint_addr);
+            const marketCap = yield utils_js_1.calculateMarketCap(sol_spent, token_amt);
             if (chatid && IS_BUY && info.program_id) {
                 const program_id = info === null || info === void 0 ? void 0 : info.program_id;
                 console.log("bcinfo", mint_addr, from_addr, program_id);
@@ -123,7 +130,9 @@ app.post("/", (req, res) => {
 			💸|SPENT <b>${sol_spent}</b>
 			💰|BAG: <b>${utils_js_1.convertToK(token_amt)}</b>
 			🔒|<a href='https://solscan.io/account/${userWallet}'>Check User Wallet</a>
-			📊| Market Cap ${marketCap}
+			📊| Market Cap ${marketCap} ${Array(Math.floor(sol_spent * 10))
+                                .fill(`🤑`)
+                                .join("")}
 					
 				    		🚀 a winning choice 🚀        
 							Bonding Curve Filled ${bc_percent}%
@@ -131,8 +140,8 @@ app.post("/", (req, res) => {
 				<a href='https://pump.fun/${mint_addr}'>BUY on pump.fun</a>
 
 				<code>${mint_addr}</code>
-					
-					`,
+				
+				`,
                             parse_mode: "HTML",
                         });
                     }
@@ -146,7 +155,9 @@ app.post("/", (req, res) => {
 			💸|JEETED FOR <b>${sol_spent}</b>
 			💰|LOST BAG of ${info.name}: <b>${utils_js_1.convertToK(token_amt)}</b>
 			🔒|<a href='https://solscan.io/account/${userWallet}'>Check User Wallet</a>
-			| Market Cap GO DOWN
+			| Market Cap GO DOWN ${Array(Math.floor(sol_spent * 10))
+                        .fill(`😓`)
+                        .join("")}
 				
 				    what a dunce! 🤡 
 		
@@ -168,9 +179,10 @@ app.post("/", (req, res) => {
 			📊| Market Cap ${marketCap}
 					
 				    	🚀 a winning choice 🚀        
-				
-			<a href='https://pump.fun/${mint_addr}'>BUY</a>
-					
+						<code>${mint_addr}</code>
+						
+			<a href='https://pump.fun/${mint_addr}'>BUY</a> | <a href='https://dexscreener.com/solana/${mint_addr}'>DEX</a>
+						
 					`,
                     parse_mode: "HTML",
                 });

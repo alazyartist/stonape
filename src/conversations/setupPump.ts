@@ -83,8 +83,9 @@ export default async function setupPump(
 
 				await ctx.reply("Setting up PumpBot...");
 				await ctx.reply(
-					"PumpBot has been successfully setup. You will now receive notifications for the token for 10 Hours."
+					"PumpBot has been successfully setup. You will now receive notifications for the token for 10 Days."
 				);
+				//  You're welcome to ask for more time by typing /more_time@ston_ape_bot"
 				await ctx.reply(
 					"Please allow 2 to 3 minutes for the bot to start pulling in Buys."
 				);

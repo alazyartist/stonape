@@ -45,15 +45,18 @@ const removePump_1 = __importDefault(require("./conversations/removePump"));
 const grammy_middlewares_1 = require("grammy-middlewares");
 const whitelistMiddleware_1 = __importDefault(require("./whitelistMiddleware"));
 const walletCheck_1 = __importDefault(require("./walletCheck"));
+const transformer_throttler_1 = require("@grammyjs/transformer-throttler");
 dotenv.config();
 const BOT_TOKEN = process.env.MODE === "DEV"
     ? process.env.TELEGRAM_DEV_TOKEN
     : process.env.TELEGRAM_TOKEN;
 exports.bot = new grammy_1.Bot(BOT_TOKEN);
+const throttler = transformer_throttler_1.apiThrottler();
+exports.bot.api.config.use(throttler);
 // Use the plugin.
 exports.bot.api.config.use(auto_retry_1.autoRetry({
     maxRetryAttempts: 4,
-    maxDelaySeconds: 1000,
+    maxDelaySeconds: 1200,
 }));
 exports.bot.use(grammy_middlewares_1.ignoreOld(60));
 exports.bot.command("check_wallet", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
@@ -81,7 +84,9 @@ exports.bot.use(grammy_1.session({ initial: () => ({}) }));
 exports.bot.use(conversations_1.conversations());
 // bot.api.getMe().then(console.log).catch(console.error);
 exports.bot.catch((err) => {
-    err.ctx.reply("An error occurred, please try again, if the error persists, contact the dev @alazyartist");
+    // err.ctx.reply(
+    // 	"An error occurred, please try again, if the error persists, contact the dev @alazyartist"
+    // );
     console.error(`Error for ${err.ctx.update.message}`, err);
     exports.bot.start();
 });
@@ -175,6 +180,12 @@ needsWhitelist.command("setup_pump", (ctx) => __awaiter(void 0, void 0, void 0, 
 needsWhitelist.command("remove_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield ctx.conversation.enter("removePump");
 }));
+needsWhitelist.command("remove_pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    yield ctx.conversation.enter("removePump");
+}));
+// needsWhitelist.command("more_time", async (ctx) => {
+// 	extendTime(ctx);
+// });
 // bot.on(":text").hears("ape", (ctx) => {
 // 	ctx.reply("🦍", {
 // 		reply_markup: {
@@ -187,10 +198,9 @@ needsWhitelist.command("remove_pump", (ctx) => __awaiter(void 0, void 0, void 0,
 // 		},
 // 	});
 // });
-needsWhitelist.on(":text").hears("watch.it.pump", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    yield ctx.conversation.enter("setupPump");
-}));
-console.log("Bot is running...");
+// needsWhitelist.on(":text").hears("watch.it.pump", async (ctx) => {
+// 	await ctx.conversation.enter("setupPump");
+// });
 // bot.start();
 exports.bot.use(needsWhitelist);
 // 	// 	try {

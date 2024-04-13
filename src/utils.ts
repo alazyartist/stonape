@@ -13,9 +13,11 @@ function convertToK(value: string) {
 async function getSolPriceGecko() {
 	const PRICE_OF_SOL = await getSolanaPrice();
 	if (PRICE_OF_SOL !== "null" && PRICE_OF_SOL !== null) {
+		console.log("Fetching Solana Price from Redis");
 		return parseFloat(PRICE_OF_SOL);
 	}
 	if (!PRICE_OF_SOL || PRICE_OF_SOL === "null") {
+		console.log("Fetching Solana Price from Gecko");
 		const data = await fetch(
 			"https://api.geckoterminal.com/api/v2/simple/networks/solana/token_price/So11111111111111111111111111111111111111112"
 		);
